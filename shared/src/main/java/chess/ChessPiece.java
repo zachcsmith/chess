@@ -59,7 +59,7 @@ public class ChessPiece {
         switch (type){
             case BISHOP: moves = BishopMoves.getMoves(board, myPosition);break;
             case ROOK: moves = RookMoves.getMoves(board, myPosition);break;
-//            case KNIGHT: moves = KnightMoves.getMoves(board, myPosition);break;
+            case KNIGHT: moves = KnightMoves.getMoves(board, myPosition);break;
 //            case QUEEN: moves = QueenMoves.getMoves(board, myPosition);break;
 //            case KING: moves = KingMoves.getMoves(board, myPosition);break;
         }
