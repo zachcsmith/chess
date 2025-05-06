@@ -7,7 +7,7 @@ import java.util.HashSet;
 public class PawnMoves implements MovementCalculator {
     public static HashSet<ChessMove> getMoves(ChessBoard board, ChessPosition position) {
         int currentRow = position.getRow();
-        int currentCol = position.getRow();
+        int currentCol = position.getColumn();
         ChessPiece currentPiece = board.getPiece(position);
         HashSet<ChessMove> moves = new HashSet<>();
         //White Pawns
@@ -29,6 +29,23 @@ public class PawnMoves implements MovementCalculator {
             }
         }
         //Black
+        if (board.getPiece(position).getTeamColor() == ChessGame.TeamColor.BLACK && currentRow == 7) {
+            int newRow = currentRow - 1;
+            ChessPosition newPosition = new ChessPosition(newRow, currentCol);
+            if (board.getPiece(newPosition) == null) {
+                moves.add(new ChessMove(position, newPosition, null));
+                newPosition = new ChessPosition(newRow - 1, currentCol);
+                if (board.getPiece(newPosition) == null) {
+                    moves.add(new ChessMove(position, newPosition, null));
+                }
+            }
+        } else if (currentPiece.getTeamColor() == ChessGame.TeamColor.BLACK) {
+            int newRow = currentRow - 1;
+            ChessPosition newPosition = new ChessPosition(newRow, currentCol);
+            if (board.getPiece(newPosition) == null) {
+                addPawnMoves(moves, position, newPosition);
+            }
+        }
 
 
         return moves;
