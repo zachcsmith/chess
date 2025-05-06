@@ -47,8 +47,38 @@ public class PawnMoves implements MovementCalculator {
             }
         }
 
+        //Capturing
+        if (currentPiece.getTeamColor() == ChessGame.TeamColor.WHITE){
+            int[][] changes = {{1,1},{1,-1}};
+            capture(board,position,changes,currentRow,currentCol,currentPiece,moves);
+        }
+        if (currentPiece.getTeamColor() == ChessGame.TeamColor.BLACK){
+            int[][] changes = {{-1,1},{-1,-1}};
+            capture(board, position, changes, currentRow, currentCol, currentPiece, moves);
+        }
+
 
         return moves;
+    }
+
+    private static void capture(ChessBoard board,
+                                ChessPosition position,
+                                int[][] changes,
+                                int currentRow,
+                                int currentCol,
+                                ChessPiece currentPiece,
+                                HashSet<ChessMove> moves) {
+        for (int[] item : changes) {
+            int newRow = currentRow + item[0];
+            int newCol = currentCol + item[1];
+            ChessPosition newPosition = new ChessPosition(newRow, newCol);
+            if (MovementCalculator.inBounds(newPosition)) {
+                //check if piece there
+                if(board.getPiece(newPosition) != null && board.getPiece(newPosition).getTeamColor() != currentPiece.getTeamColor()) {
+                    addPawnMoves(moves, position, newPosition);
+                }
+            }
+        }
     }
 
     public static void addPawnMoves(HashSet<ChessMove> moves, ChessPosition position, ChessPosition newPosition) {
