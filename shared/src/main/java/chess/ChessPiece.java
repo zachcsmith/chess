@@ -59,6 +59,7 @@ public class ChessPiece {
         switch (type){
             case BISHOP: moves = BishopMoves.getMoves(board, myPosition);break;
         }
+        return moves;
     }
 
     @Override
