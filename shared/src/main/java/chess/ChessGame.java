@@ -58,7 +58,15 @@ public class ChessGame {
         Collection<ChessMove> allMoves = piece.pieceMoves(board, startPosition);
         HashSet<ChessMove> moves = new HashSet<>();
         for(ChessMove move: allMoves){
-
+            ChessPosition end = move.getEndPosition();
+            ChessPiece capture = board.getPiece(end);
+            board.addPiece(startPosition, null);
+            board.addPiece(end, piece);
+            if(!isInCheck(color)){
+                moves.add(move);
+            }
+            board.addPiece(startPosition, piece);
+            board.addPiece(end, capture);
         }
         return moves;
     }
