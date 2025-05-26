@@ -99,10 +99,11 @@ public class ServiceUnitTests {
     void joinGameTestSuccess() throws  DataAccessException{
         userService.register(new RegisterRequest("username", "password", "email@domain"));
         CreateGameRequest request = new CreateGameRequest("game");
-        gameService.createGame(request);
-        JoinGameRequest joinGameRequest = new JoinGameRequest("WHITE", 1);
+        CreateGameResult idgrabber = gameService.createGame(request);
+        int id = idgrabber.gameID();
+        JoinGameRequest joinGameRequest = new JoinGameRequest("WHITE", id);
         gameService.joinGame(joinGameRequest, "username");
-        GameData game = gameDataAccess.getGame(1);
+        GameData game = gameDataAccess.getGame(id);
         Assertions.assertEquals("username", game.whiteUsername());
     }
 
@@ -111,9 +112,10 @@ public class ServiceUnitTests {
         userService.register(new RegisterRequest("username", "password", "email@domain"));
         userService.register(new RegisterRequest("existingUser", "newPassword", "email2@domain"));
         CreateGameRequest request = new CreateGameRequest("game");
-        gameService.createGame(request);
-        gameService.joinGame(new JoinGameRequest("WHITE", 1), "existingUser");
-        JoinGameRequest joinGameRequest = new JoinGameRequest("WHITE", 1);
+        CreateGameResult idgrabber = gameService.createGame(request);
+        int id = idgrabber.gameID();
+        gameService.joinGame(new JoinGameRequest("WHITE", id), "existingUser");
+        JoinGameRequest joinGameRequest = new JoinGameRequest("WHITE", id);
         DataAccessException ex = Assertions.assertThrows(DataAccessException.class, ()-> gameService.joinGame(joinGameRequest, "username"));
 
         Assertions.assertEquals("Error: already taken", ex.getMessage());
