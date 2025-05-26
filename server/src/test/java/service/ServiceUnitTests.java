@@ -94,4 +94,51 @@ public class ServiceUnitTests {
 
         Assertions.assertNotEquals(5, result.gameID());
     }
+
+    @Test
+    void joinGameTestSuccess() throws  DataAccessException{
+        userService.register(new RegisterRequest("username", "password", "email@domain"));
+        CreateGameRequest request = new CreateGameRequest("game");
+        gameService.createGame(request);
+        JoinGameRequest joinGameRequest = new JoinGameRequest("WHITE", 1);
+        gameService.joinGame(joinGameRequest, "username");
+        GameData game = gameDataAccess.getGame(1);
+        Assertions.assertEquals("username", game.whiteUsername());
+    }
+
+    @Test
+    void joinGameTestFail() throws  DataAccessException{
+        userService.register(new RegisterRequest("username", "password", "email@domain"));
+        userService.register(new RegisterRequest("existingUser", "newPassword", "email2@domain"));
+        CreateGameRequest request = new CreateGameRequest("game");
+        gameService.createGame(request);
+        gameService.joinGame(new JoinGameRequest("WHITE", 1), "existingUser");
+        JoinGameRequest joinGameRequest = new JoinGameRequest("WHITE", 1);
+        DataAccessException ex = Assertions.assertThrows(DataAccessException.class, ()-> gameService.joinGame(joinGameRequest, "username"));
+
+        Assertions.assertEquals("Error: already taken", ex.getMessage());
+    }
+
+    @Test
+    void listGamesTestSuccess() throws DataAccessException{
+        RegisterResult res = userService.register(new RegisterRequest("username", "password", "email@domain"));
+        String authToken = res.authToken();
+        gameService.createGame(new CreateGameRequest("game1"));
+        gameService.createGame(new CreateGameRequest("game2"));
+        ListGamesResult result = gameService.listGames(authToken);
+
+        Assertions.assertEquals(2, result.games().toArray().length);
+    }
+
+    @Test
+    void listGamesTestFail() throws DataAccessException{
+        RegisterResult res = userService.register(new RegisterRequest("username", "password", "email@domain"));
+        String authToken = res.authToken();
+        gameService.createGame(new CreateGameRequest("game1"));
+        gameService.createGame(new CreateGameRequest("game2"));
+        ListGamesResult result = gameService.listGames(authToken);
+
+        Assertions.assertNotEquals(2, result.games().getFirst().gameID());
+        Assertions.assertNotEquals(1, result.games().get(1).gameID());
+    }
 }

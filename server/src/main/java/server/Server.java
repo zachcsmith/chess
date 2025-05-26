@@ -2,6 +2,8 @@ package server;
 
 import com.google.gson.Gson;
 import dataaccess.*;
+import handlers.JoinGameRequest;
+import model.AuthData;
 import model.UserData;
 import service.*;
 import spark.*;
@@ -29,6 +31,7 @@ public class Server {
         // Initialize handlers
         userHandler = new UserHandler(userService, authService);
         gameHandler = new GameHandler(gameService);
+
         Spark.port(desiredPort);
 
         Spark.staticFiles.location("/web");
@@ -44,6 +47,8 @@ public class Server {
         Spark.post("/session", userHandler::login);
         Spark.delete("/session", userHandler::logout);
         Spark.post("/game", gameHandler::createGame);
+        Spark.get("/game", gameHandler::listGame);
+        Spark.put("/game", this::joinGame);
 
         //This line initializes the server and can be removed once you have a functioning endpoint 
         Spark.init();
@@ -65,6 +70,65 @@ public class Server {
             return new Gson().toJson(Map.of("Failed to clear", "Error"));
         }
     }
+
+    private Object joinGame(Request request, Response res) {
+        String authToken = request.headers("authorization");
+
+        // 🔒 Explicitly check for missing token
+        if (authToken == null || authToken.isEmpty()) {
+            res.status(401);
+            return new Gson().toJson(Map.of("message", "Error: unauthorized"));
+        }
+
+        try {
+            validateToken(authToken); // validate in DAO
+            String username = getUsername(authToken);
+            JoinGameRequest joinGameRequest = new Gson().fromJson(request.body(), JoinGameRequest.class);
+            gameService.joinGame(joinGameRequest, username);
+            return "{}";
+        } catch (DataAccessException e) {
+            String msg = e.getMessage();
+            switch (msg) {
+                case "Error: unauthorized":
+                    res.status(401);
+                    break;
+                case "Error: already taken":
+                    res.status(403);
+                    break;
+                case "Error: bad request":
+                    res.status(400);
+                    break;
+                default:
+                    res.status(500);
+                    break;
+            }
+            return new Gson().toJson(Map.of("message", msg));
+        }
+    }
+
+    private void validateToken(String authToken) throws DataAccessException {
+        try {
+            if (authToken == null || authToken.isEmpty()) {
+                throw new DataAccessException("Error: unauthorized");
+            }
+
+            AuthData data = authDAO.getAuth(authToken);
+            if (data == null || data.authToken() == null) {
+                throw new DataAccessException("Error: unauthorized");
+            }
+
+        } catch (Exception e) {
+            throw new DataAccessException("Error: unauthorized");
+        }
+    }
+
+    private String getUsername(String authToken)throws DataAccessException{
+        AuthData auth = authDAO.getAuth(authToken);
+        return auth.username();
+    }
+
+
+
 
     public void stop() {
         Spark.stop();
