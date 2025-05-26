@@ -38,4 +38,39 @@ public class UserService {
         authDataAccess.clearAuths();
         userDataAccess.clearUsers();
     }
+
+    public LoginResult login(LoginRequest loginRequest) throws DataAccessException{
+        String username = loginRequest.username();
+        String password = loginRequest.password();
+        if (username == null || password == null){
+            throw new DataAccessException("Error: bad request");
+        }
+        UserData currentUser = userDataAccess.getUser(username);
+        if (currentUser == null){
+            throw new DataAccessException("Error: unauthorized");
+        }
+        else{
+            String expectedPass = currentUser.password();
+            if(!expectedPass.equals(password)){
+                throw new DataAccessException("Error: unauthorized");
+            }
+        }
+        String authToken = AuthService.generateAuth();
+        AuthData auth = new AuthData(authToken, username);
+        authDataAccess.createAuth(auth);
+        return new LoginResult(username, authToken);
+    }
+
+    public void logout(String authToken) throws DataAccessException{
+        if (authToken == null){
+            throw new DataAccessException("Error: unauthorized");
+        }
+        AuthData auth = authDataAccess.getAuth(authToken);
+        if (auth == null){
+            throw new DataAccessException("Error: unauthorized");
+        }
+        authDataAccess.deleteAuth(authToken);
+    }
+
+
 }

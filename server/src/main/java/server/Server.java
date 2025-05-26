@@ -1,10 +1,8 @@
 package server;
 
 import com.google.gson.Gson;
-import dataaccess.AuthDAO;
-import dataaccess.DataAccessException;
-import dataaccess.GameDAO;
-import dataaccess.UserDAO;
+import dataaccess.*;
+import model.UserData;
 import service.*;
 import spark.*;
 
@@ -17,8 +15,8 @@ public class Server {
     UserService userService;
     UserHandler userHandler;
     AuthService authService;
-    AuthDAO authDAO;
-    UserDAO userDAO;
+    AuthDAO authDAO = new MemoryAuthDAO();
+    UserDAO userDAO = new MemoryUserDAO();
 
 
     public int run(int desiredPort) {
@@ -29,7 +27,7 @@ public class Server {
         userHandler = new UserHandler(userService, authService);
         Spark.port(desiredPort);
 
-        Spark.staticFiles.location("web");
+        Spark.staticFiles.location("/web");
         Spark.exception(DataAccessException.class, (exception, req, res) ->{
             res.status(403);
             res.type("application/json");
@@ -39,6 +37,8 @@ public class Server {
         // Register your endpoints and handle exceptions here.
         Spark.post("/user", userHandler::register);
         delete("/db", this::clear);
+        Spark.post("/session", userHandler::login);
+        Spark.delete("/session", userHandler::logout);
 
         //This line initializes the server and can be removed once you have a functioning endpoint 
         Spark.init();

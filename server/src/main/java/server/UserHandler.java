@@ -6,8 +6,10 @@ import handlers.RegisterRequest;
 import handlers.*;
 import service.AuthService;
 import service.UserService;
+import spark.Request;
 import spark.Response;
 
+import javax.xml.crypto.Data;
 import java.util.Map;
 
 public class UserHandler {
@@ -43,4 +45,39 @@ public class UserHandler {
             return gson.toJson(Map.of("message", msg));
         }
     }
+
+    public Object login(Request req, Response res) throws DataAccessException{
+        Gson gson = new Gson();
+        try {
+            LoginRequest loginRequest = gson.fromJson(req.body(), LoginRequest.class);
+            LoginResult result = userService.login(loginRequest);
+            res.status(200);
+            res.type("application/json");
+            return gson.toJson(result);
+        }catch(DataAccessException e){
+            String msg = e.getMessage();
+            if ("Error: bad request".equals(msg)) {
+                res.status(400);
+            } else if ("Error: unauthorized".equals(msg)) {
+                res.status(401);
+            } else {
+                res.status(500);
+            }
+            return gson.toJson(Map.of("message", msg));
+        }
+    }
+
+    public Object logout(Request req, Response res) throws DataAccessException{
+        Gson gson = new Gson();
+        String authToken = req.headers("authorization");
+        try{
+            userService.logout(authToken);
+            res.status(200);
+            return"{}";
+        } catch (DataAccessException e) {
+            res.status(401);
+            return gson.toJson(Map.of("message", e.getMessage()));
+        }
+    }
+
 }
