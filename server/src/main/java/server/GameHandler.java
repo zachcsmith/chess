@@ -54,10 +54,11 @@ public class GameHandler {
     public Object listGame(Request req, Response res){
         try{
             String authToken = req.headers("authorization");
-            if (authToken == null){
+            if (authToken == null || authToken.isEmpty() || gameService.invalidAuth(authToken)) {
                 res.status(401);
                 return new Gson().toJson(Map.of("message", "Error: unauthorized"));
             }
+
             ListGamesResult result = gameService.listGames(authToken);
             res.status(200);
             return new Gson().toJson(result);

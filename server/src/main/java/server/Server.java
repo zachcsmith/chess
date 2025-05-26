@@ -57,31 +57,22 @@ public class Server {
         return Spark.port();
     }
 
-    public Object clear(Request request, Response response){
-        response.type("application/json");
-        try{
-            userService.clear();
-            authService.clear();
-            gameService.clear();
-            response.status(200);
-            return "{}";
-        } catch (DataAccessException e) {
-            response.status(500);
-            return new Gson().toJson(Map.of("Failed to clear", "Error"));
-        }
+    public Object clear(Request request, Response response) throws DataAccessException{
+        userService.clear();
+        gameService.clear();
+        return "{}";
     }
 
     private Object joinGame(Request request, Response res) {
         String authToken = request.headers("authorization");
 
-        // 🔒 Explicitly check for missing token
         if (authToken == null || authToken.isEmpty()) {
             res.status(401);
             return new Gson().toJson(Map.of("message", "Error: unauthorized"));
         }
 
         try {
-            validateToken(authToken); // validate in DAO
+            validateToken(authToken);
             String username = getUsername(authToken);
             JoinGameRequest joinGameRequest = new Gson().fromJson(request.body(), JoinGameRequest.class);
             gameService.joinGame(joinGameRequest, username);
