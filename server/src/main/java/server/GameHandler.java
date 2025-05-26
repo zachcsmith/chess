@@ -73,35 +73,4 @@ public class GameHandler {
         }
 
     }
-
-//    public Object joinGame(Request req, Response res) {
-//        try {
-//            String authToken = req.headers("authorization");
-//            if (authToken == null) {
-//                res.status(401);
-//                return new Gson().toJson(Map.of("message", "Error: unauthorized"));
-//            }
-//            AuthData auth = authDataAccess.getAuth(authToken);
-//
-//            JoinGameRequest request = new Gson().fromJson(req.body(), JoinGameRequest.class);
-//            gameService.joinGame(request, auth.username());
-//
-//            res.status(200);
-//            return "{}";  // empty JSON on success
-//        } catch (DataAccessException e) {
-//            String msg = e.getMessage().toLowerCase();
-//
-//            if (msg.contains("unauthorized")) {
-//                res.status(401);
-//            } else if (msg.contains("already taken")) {
-//                res.status(403);
-//            } else if (msg.contains("bad request")) {
-//                res.status(400);
-//            } else {
-//                res.status(500);
-//            }
-//
-//            return new Gson().toJson(Map.of("message", e.getMessage()));
-//        }
-//    }
 }
