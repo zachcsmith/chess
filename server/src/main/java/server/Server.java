@@ -11,20 +11,24 @@ import java.util.Map;
 import static spark.Spark.delete;
 
 public class Server {
-    GameDAO gameDAO;
     UserService userService;
     UserHandler userHandler;
+    GameHandler gameHandler;
     AuthService authService;
+    GameService gameService;
     AuthDAO authDAO = new MemoryAuthDAO();
     UserDAO userDAO = new MemoryUserDAO();
+    GameDAO gameDAO = new MemoryGameDAO();
 
 
     public int run(int desiredPort) {
         userService = new UserService(userDAO, authDAO);
-        authService = new AuthService(userDAO, authDAO); // if needed
+        authService = new AuthService(userDAO, authDAO);
+        gameService = new GameService(userDAO, authDAO, gameDAO);
 
         // Initialize handlers
         userHandler = new UserHandler(userService, authService);
+        gameHandler = new GameHandler(gameService);
         Spark.port(desiredPort);
 
         Spark.staticFiles.location("/web");
@@ -39,6 +43,7 @@ public class Server {
         delete("/db", this::clear);
         Spark.post("/session", userHandler::login);
         Spark.delete("/session", userHandler::logout);
+        Spark.post("/game", gameHandler::createGame);
 
         //This line initializes the server and can be removed once you have a functioning endpoint 
         Spark.init();
@@ -52,6 +57,7 @@ public class Server {
         try{
             userService.clear();
             authService.clear();
+            gameService.clear();
             response.status(200);
             return "{}";
         } catch (DataAccessException e) {

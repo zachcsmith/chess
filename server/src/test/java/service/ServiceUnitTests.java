@@ -12,11 +12,13 @@ public class ServiceUnitTests {
     MemoryGameDAO gameDataAccess = new MemoryGameDAO();
     UserService userService = new UserService(userDataAccess,authDataAccess);
     AuthService authService = new AuthService(userDataAccess,authDataAccess);
+    GameService gameService = new GameService(userDataAccess, authDataAccess, gameDataAccess);
 
     @BeforeEach
     void setup()throws DataAccessException{
         userService.clear();
         authService.clear();
+        gameService.clear();
     }
 
     @Test
@@ -75,5 +77,21 @@ public class ServiceUnitTests {
         DataAccessException ex = Assertions.assertThrows(DataAccessException.class, ()-> userService.login(user));
 
         Assertions.assertEquals("Error: unauthorized", ex.getMessage());
+    }
+
+    @Test
+    void createGameTestSuccess() throws DataAccessException{
+        CreateGameRequest request = new CreateGameRequest("game");
+        CreateGameResult result = gameService.createGame(request);
+
+        Assertions.assertNotNull(gameDataAccess.getGame(result.gameID()));
+    }
+
+    @Test
+    void createGameTestFail() throws DataAccessException{
+        CreateGameRequest request = new CreateGameRequest("game");
+        CreateGameResult result = gameService.createGame(request);
+
+        Assertions.assertNotEquals(5, result.gameID());
     }
 }
