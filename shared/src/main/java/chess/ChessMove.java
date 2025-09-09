@@ -31,7 +31,9 @@ public class ChessMove {
     /**
      * @return ChessPosition of ending location
      */
-    public ChessPosition getEndPosition() {return endPosition;}
+    public ChessPosition getEndPosition() {
+        return endPosition;
+    }
 
 
     /**
@@ -56,5 +58,14 @@ public class ChessMove {
     @Override
     public int hashCode() {
         return Objects.hash(startPosition, endPosition, promotionPiece);
+    }
+
+    @Override
+    public String toString() {
+        return "ChessMove{" +
+                "start: {" + startPosition +
+                "} end: {" + endPosition +
+                "} promo: " + promotionPiece +
+                '}';
     }
 }
