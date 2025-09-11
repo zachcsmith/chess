@@ -58,7 +58,6 @@ public class ChessPiece {
         var moves = new HashSet<ChessMove>();
         switch (type) {
             case BISHOP -> moves = BishopMoves.getMoves(board, myPosition);
-            break;
         }
         return moves;
     }
