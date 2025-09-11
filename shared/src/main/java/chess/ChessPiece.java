@@ -53,7 +53,9 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        return new HashSet<ChessMove>();
+        var moves = new HashSet<ChessMove>();
+
+        return moves;
     }
 
     @Override
