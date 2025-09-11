@@ -1,6 +1,7 @@
 package chess;
 
 import chess.movement.BishopMoves;
+import chess.movement.RookMoves;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -58,6 +59,7 @@ public class ChessPiece {
         var moves = new HashSet<ChessMove>();
         switch (type) {
             case BISHOP -> moves = BishopMoves.getMoves(board, myPosition);
+            case ROOK -> moves = RookMoves.getMoves(board, myPosition);
         }
         return moves;
     }
