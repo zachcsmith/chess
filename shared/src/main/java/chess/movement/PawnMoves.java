@@ -39,6 +39,34 @@ public class PawnMoves implements MovementCalculator {
                     }
                 }
             }
+        } else {
+            if (row == 7) {
+                ChessPosition newpos = new ChessPosition(6, col);
+                ChessPiece maybepiece = board.getPiece(newpos);
+                if (maybepiece == null) {
+                    addmove(moves, position, newpos);
+                    newpos = new ChessPosition(5, col);
+                    if (board.getPiece(newpos) == null) {
+                        addmove(moves, position, newpos);
+                    }
+
+                }
+            } else {
+                ChessPosition newpos = new ChessPosition(row - 1, col);
+                ChessPiece maybepiece = board.getPiece(newpos);
+                if (maybepiece == null) {
+                    addmove(moves, position, newpos);
+                }
+            }
+
+            for (int[] change : new int[][]{{-1, 1}, {-1, -1}}) {
+                ChessPosition newpos = new ChessPosition(row + change[0], col + change[1]);
+                if (MovementCalculator.inBounds(newpos) && board.getPiece(newpos) != null) {
+                    if (teamcolor != board.getPiece(newpos).getTeamColor()) {
+                        addmove(moves, position, newpos);
+                    }
+                }
+            }
         }
 
 
