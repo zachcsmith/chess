@@ -10,6 +10,11 @@ public class PawnMoves implements MovementCalculator {
         //white pawns advance
         int row = position.getRow();
         int col = position.getColumn();
+        int[][] changes = new int[][]{{1, 1}, {1, -1}};
+        if (board.getPiece(position).getTeamColor() == ChessGame.TeamColor.BLACK) {
+            changes = new int[][]{{-1, 1}, {-1, -1}};
+        }
+
         ChessGame.TeamColor teamcolor = board.getPiece(position).getTeamColor();
         if (board.getPiece(position).getTeamColor() == ChessGame.TeamColor.WHITE) {
             if (row == 2) {
@@ -31,14 +36,7 @@ public class PawnMoves implements MovementCalculator {
                 }
             }
 
-            for (int[] change : new int[][]{{1, 1}, {1, -1}}) {
-                ChessPosition newpos = new ChessPosition(row + change[0], col + change[1]);
-                if (MovementCalculator.inBounds(newpos) && board.getPiece(newpos) != null) {
-                    if (teamcolor != board.getPiece(newpos).getTeamColor()) {
-                        addmove(moves, position, newpos);
-                    }
-                }
-            }
+            capturelogic(moves, position, board, changes);
         } else {
             if (row == 7) {
                 ChessPosition newpos = new ChessPosition(6, col);
@@ -59,14 +57,7 @@ public class PawnMoves implements MovementCalculator {
                 }
             }
 
-            for (int[] change : new int[][]{{-1, 1}, {-1, -1}}) {
-                ChessPosition newpos = new ChessPosition(row + change[0], col + change[1]);
-                if (MovementCalculator.inBounds(newpos) && board.getPiece(newpos) != null) {
-                    if (teamcolor != board.getPiece(newpos).getTeamColor()) {
-                        addmove(moves, position, newpos);
-                    }
-                }
-            }
+            capturelogic(moves, position, board, changes);
         }
 
 
@@ -81,6 +72,17 @@ public class PawnMoves implements MovementCalculator {
             moves.add(new ChessMove(pos, newpos, ChessPiece.PieceType.KNIGHT));
         } else {
             moves.add(new ChessMove(pos, newpos, null));
+        }
+    }
+
+    public static void capturelogic(HashSet<ChessMove> moves, ChessPosition pos, ChessBoard board, int[][] changes) {
+        for (int[] change : changes) {
+            ChessPosition newpos = new ChessPosition(pos.getRow() + change[0], pos.getColumn() + change[1]);
+            if (MovementCalculator.inBounds(newpos) && board.getPiece(newpos) != null) {
+                if (board.getPiece(pos).getTeamColor() != board.getPiece(newpos).getTeamColor()) {
+                    addmove(moves, pos, newpos);
+                }
+            }
         }
     }
 }

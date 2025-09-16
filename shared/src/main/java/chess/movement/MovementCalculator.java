@@ -17,7 +17,8 @@ public interface MovementCalculator {
         return true;
     }
 
-    static void collectMoves(ChessBoard board, ChessPosition position, HashSet<ChessMove> moves, ChessGame.TeamColor baseColor, int[][] changes, boolean infinite) {
+    static void collectMoves(ChessBoard board, ChessPosition position, HashSet<ChessMove> moves,
+                             ChessGame.TeamColor baseColor, int[][] changes, boolean infinite) {
         for (int[] change : changes) {
             int newRow = position.getRow();
             int newCol = position.getColumn();
