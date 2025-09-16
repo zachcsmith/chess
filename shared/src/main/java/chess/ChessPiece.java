@@ -62,6 +62,7 @@ public class ChessPiece {
             case KING -> moves = KingMoves.getMoves(board, myPosition);
             case QUEEN -> moves = QueenMoves.getMoves(board, myPosition);
             case KNIGHT -> moves = KnightMoves.getMoves(board, myPosition);
+            case PAWN -> moves = PawnMoves.getMoves(board, myPosition);
         }
         return moves;
     }
