@@ -15,6 +15,7 @@ public class ChessGame {
 
     public ChessGame() {
         setTeamTurn(TeamColor.WHITE);
+        board.resetBoard();
     }
 
     /**
@@ -83,6 +84,7 @@ public class ChessGame {
      */
     public boolean isInCheck(TeamColor teamColor) {
         //find King
+        ChessPosition kingpos = null;
         for (int row = 1; row <= 8; row++) {
             for (int col = 1; col <= 8; col++) {
                 ChessPiece piece = board.getPiece(new ChessPosition(row, col));
@@ -90,7 +92,23 @@ public class ChessGame {
                     continue;
                 }
                 if (piece.getPieceType() == ChessPiece.PieceType.KING) {
-                    ChessPosition kingpos = new ChessPosition(row, col);
+                    kingpos = new ChessPosition(row, col);
+                }
+            }
+        }
+
+        for (int row = 1; row <= 8; row++) {
+            for (int col = 1; col <= 8; col++) {
+                ChessPosition pos = new ChessPosition(row, col);
+                ChessPiece piece = board.getPiece(pos);
+                if (piece == null || piece.getTeamColor() == teamColor) {
+                    continue;
+                }
+                Collection<ChessMove> allmoves = piece.pieceMoves(board, pos);
+                for (ChessMove move : allmoves) {
+                    if (move.getEndPosition().equals(kingpos)) {
+                        return true;
+                    }
                 }
             }
         }
@@ -136,4 +154,17 @@ public class ChessGame {
         return board;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ChessGame chessGame = (ChessGame) o;
+        return turnColor == chessGame.turnColor && Objects.equals(board, chessGame.board);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(turnColor, board);
+    }
 }
