@@ -10,8 +10,8 @@ import java.util.Objects;
  * signature of the existing methods.
  */
 public class ChessGame {
-    TeamColor turnColor;
-    ChessBoard board;
+    private TeamColor turnColor;
+    private ChessBoard board = new ChessBoard();
 
     public ChessGame() {
         setTeamTurn(TeamColor.WHITE);
@@ -62,9 +62,17 @@ public class ChessGame {
         ChessPosition start = move.getStartPosition();
         ChessPosition end = move.getEndPosition();
         ChessPiece piece = board.getPiece(start);
+        //confirm validity of move
+        if (piece == null) {
+            throw new InvalidMoveException("No piece at location");
+        }
         if (piece.getTeamColor() != turnColor) {
             throw new InvalidMoveException("not this team's turn");
         }
+        //make the move
+        var valid = validMoves(start);
+        board.addPiece(start, null);
+        board.addPiece(end, piece);
     }
 
     /**
@@ -74,7 +82,19 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        //find King
+        for (int row = 1; row <= 8; row++) {
+            for (int col = 1; col <= 8; col++) {
+                ChessPiece piece = board.getPiece(new ChessPosition(row, col));
+                if (piece == null || piece.getTeamColor() != teamColor) {
+                    continue;
+                }
+                if (piece.getPieceType() == ChessPiece.PieceType.KING) {
+                    ChessPosition kingpos = new ChessPosition(row, col);
+                }
+            }
+        }
+        return false;
     }
 
     /**
