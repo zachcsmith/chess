@@ -1,6 +1,7 @@
 package chess;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Objects;
 
 /**
@@ -50,7 +51,22 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        ChessPiece piece = board.getPiece(startPosition);
+        Collection<ChessMove> allmoves = piece.pieceMoves(board, startPosition);
+        Collection<ChessMove> validmoves = new HashSet<>();
+        for (ChessMove move : allmoves) {
+            //create fake board senario
+            ChessPiece endpiece = board.getPiece(move.getEndPosition());
+            board.addPiece(startPosition, null);
+            board.addPiece(move.getEndPosition(), piece);
+            //check if change causes check
+            if (!isInCheck(piece.getTeamColor())) {
+                validmoves.add(move);
+            }
+            board.addPiece(startPosition, piece);
+            board.addPiece(move.getEndPosition(), endpiece);
+        }
+        return validmoves;
     }
 
     /**
@@ -72,8 +88,17 @@ public class ChessGame {
         }
         //make the move
         var valid = validMoves(start);
-        board.addPiece(start, null);
-        board.addPiece(end, piece);
+        if (valid.contains(move)) {
+            board.addPiece(start, null);
+            board.addPiece(end, piece);
+            if (getTeamTurn() == TeamColor.WHITE) {
+                setTeamTurn(TeamColor.BLACK);
+            } else {
+                setTeamTurn(TeamColor.WHITE);
+            }
+        } else {
+            throw new InvalidMoveException("not a valid move");
+        }
     }
 
     /**
