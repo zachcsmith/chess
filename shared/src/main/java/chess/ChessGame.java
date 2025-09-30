@@ -89,6 +89,10 @@ public class ChessGame {
         //make the move
         var valid = validMoves(start);
         if (valid.contains(move)) {
+            ChessPiece.PieceType promo = move.getPromotionPiece();
+            if (promo != null) {
+                piece = new ChessPiece(piece.getTeamColor(), promo);
+            }
             board.addPiece(start, null);
             board.addPiece(end, piece);
             if (getTeamTurn() == TeamColor.WHITE) {
