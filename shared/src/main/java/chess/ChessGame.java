@@ -122,6 +122,7 @@ public class ChessGame {
                 }
                 if (piece.getPieceType() == ChessPiece.PieceType.KING) {
                     kingpos = new ChessPosition(row, col);
+                    break;
                 }
             }
         }
@@ -151,7 +152,27 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        if (!isInCheck(teamColor)) {
+            return false;
+        } else {
+            return anyPossibleMoves(teamColor);
+        }
+    }
+
+    private boolean anyPossibleMoves(TeamColor teamColor) {
+        for (int row = 1; row <= 8; row++) {
+            for (int col = 1; col <= 8; col++) {
+                ChessPiece piece = board.getPiece(new ChessPosition(row, col));
+                if (piece == null || piece.getTeamColor() != teamColor) {
+                    continue;
+                }
+                var moves = validMoves(new ChessPosition(row, col));
+                if (!moves.isEmpty()) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /**
