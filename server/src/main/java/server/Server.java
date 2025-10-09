@@ -15,7 +15,7 @@ public class Server {
 
         // Register your endpoints and exception handlers here.
         server.delete("db", ctx -> ctx.result("{}"));
-        server.post("user", ctx -> register(ctx));
+        server.post("user", ctx -> register(ctx));// can use method reference syntax to directly talk to register()
 
     }
 
@@ -25,7 +25,7 @@ public class Server {
         var req = serializer.fromJson(reqJson, Map.class);
         //call to the service and register
 
-        var res = Map.of("username", req.get("username"), "authToken", "yzx");
+        var res = Map.of("username", req.get("username"), "authToken", "yzx"); //creating a false authtoken
         ctx.result(serializer.toJson(res));
     }
 
