@@ -19,6 +19,7 @@ public class Server {
 
     }
 
+    // this mirrors a register handler
     private void register(Context ctx) {
         var serializer = new Gson();
         String reqJson = ctx.body();
