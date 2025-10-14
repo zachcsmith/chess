@@ -1,6 +1,7 @@
 package server;
 
 import com.google.gson.Gson;
+import dataaccess.MemoryDataAccess;
 import io.javalin.*;
 import io.javalin.http.Context;
 import model.*;
@@ -14,7 +15,8 @@ public class Server {
     private final UserService userService;
 
     public Server() {
-        userService = new UserService();
+        var dataAccess = new MemoryDataAccess();
+        userService = new UserService(dataAccess);
         server = Javalin.create(config -> config.staticFiles.add("web"));
 
         // Register your endpoints and exception handlers here.
@@ -25,13 +27,18 @@ public class Server {
 
     // this mirrors a register handler
     private void register(Context ctx) {
-        var serializer = new Gson();
-        String reqJson = ctx.body();
-        UserData req = serializer.fromJson(reqJson, UserData.class);
-        //call to the service and register
-        AuthData res = userService.register(req);
-        
-        ctx.result(serializer.toJson(res));
+        try {
+            var serializer = new Gson();
+            String reqJson = ctx.body();
+            UserData req = serializer.fromJson(reqJson, UserData.class);
+            //call to the service and register
+            AuthData res = userService.register(req);
+
+            ctx.result(serializer.toJson(res));
+        } catch (Exception e) {
+            //need more logic
+            ctx.status(403).result();
+        }
     }
 
     public int run(int desiredPort) {
