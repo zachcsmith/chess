@@ -19,7 +19,7 @@ public class UserService {
             throw new Exception("already exits");
         }
         dataAccess.createUser(user);
-        var authData = new AuthData(user.username(), generateToken());
+        var authData = new AuthData(generateToken(), user.username());
         return authData;
     }
 
