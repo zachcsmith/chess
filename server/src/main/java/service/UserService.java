@@ -13,6 +13,7 @@ public class UserService {
     }
 
     //make registerResult and registerRequest classes
+    //I broke this in implementing it
     public AuthData register(UserData user) throws Exception {
         if (dataAccess.getUser(user.username()) != null) {
             throw new Exception("already exits");
