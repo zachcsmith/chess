@@ -37,6 +37,7 @@ public class ServiceTests {
     public void RegisterFailDoubleUser() throws Exception {
         DataAccess db = new MemoryDataAccess();
         UserService userService = new UserService(db);
+        userService.clear();
         UserData newUser = new UserData("user", null, "john@email.com");
         userService.register(newUser);
         assertThrows(Exception.class, () -> {

@@ -5,9 +5,9 @@ import dataaccess.MemoryDataAccess;
 import io.javalin.*;
 import io.javalin.http.Context;
 import model.*;
+import service.exceptions.AlreadyTakenException;
 import service.UserService;
-
-import java.util.Map;
+import service.exceptions.BadRequestException;
 
 public class Server {
 
@@ -15,30 +15,41 @@ public class Server {
     private final UserService userService;
 
     public Server() {
-        var dataAccess = new MemoryDataAccess();
-        userService = new UserService(dataAccess);
         server = Javalin.create(config -> config.staticFiles.add("web"));
 
+        var dataAccess = new MemoryDataAccess();
+        userService = new UserService(dataAccess);
         // Register your endpoints and exception handlers here.
         server.delete("db", this::clear); // call clear method to go run it in the DataAccess layer
-        server.post("user", ctx -> register(ctx));// can use method reference syntax to directly talk to register()
+        server.post("user", this::register);// can use method reference syntax to directly talk to register()
+
 
     }
 
     // this mirrors a register handler
     private void register(Context ctx) {
+        var serializer = new Gson();
         try {
-            var serializer = new Gson();
             String reqJson = ctx.body();
             UserData req = serializer.fromJson(reqJson, UserData.class);
             //call to the service and register
             AuthData res = userService.register(req);
-
+            ctx.status(200);
             ctx.result(serializer.toJson(res));
-        } catch (Exception e) {
+        } catch (AlreadyTakenException e) {
             //need more logic
-            ctx.status(403).result();
+            ctx.status(403);
+            ctx.result(serializer.toJson(new ErrorResponseModel(e.getMessage())));
+        } catch (BadRequestException e) {
+            ctx.status(400);
+            ctx.result(serializer.toJson(new ErrorResponseModel(e.getMessage())));
+        } catch (Exception e) {
+            ctx.status(500);
+            ctx.result(serializer.toJson(new ErrorResponseModel(e.getMessage())));
         }
+        //option 1: hard code if/else for errors after sending error msg
+        //option 2: expand DataAccessExecption
+        //option 3: create new exception classes to sort easier ie: AlreadyTakenException
     }
 
     private void clear(Context ctx) {

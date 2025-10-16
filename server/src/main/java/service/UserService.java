@@ -2,6 +2,8 @@ package service;
 
 import dataaccess.DataAccess;
 import model.*;
+import service.exceptions.AlreadyTakenException;
+import service.exceptions.BadRequestException;
 
 import java.util.UUID;
 
@@ -14,13 +16,15 @@ public class UserService {
 
     //make registerResult and registerRequest classes
     //I broke this in implementing it
-    public AuthData register(UserData user) throws Exception {
+    public AuthData register(UserData user) throws AlreadyTakenException, BadRequestException {
         if (dataAccess.getUser(user.username()) != null) {
-            throw new Exception("already exits");
+            throw new AlreadyTakenException("Error: already taken");
+        }
+        if (user.username() == null || user.password() == null || user.email() == null) {
+            throw new BadRequestException("Error: bad request");
         }
         dataAccess.createUser(user);
-        var authData = new AuthData(generateToken(), user.username());
-        return authData;
+        return new AuthData(generateToken(), user.username());
     }
 
     public void clear() {
