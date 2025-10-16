@@ -32,5 +32,16 @@ public class ServiceTests {
         assertEquals(newUser.username(), result.username());
         assertFalse(result.authToken().isEmpty());
     }
+
+    @Test
+    public void RegisterFailDoubleUser() throws Exception {
+        DataAccess db = new MemoryDataAccess();
+        UserService userService = new UserService(db);
+        UserData newUser = new UserData("user", null, "john@email.com");
+        userService.register(newUser);
+        assertThrows(Exception.class, () -> {
+            userService.register(newUser);
+        });
+    }
 }
 
