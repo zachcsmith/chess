@@ -23,6 +23,10 @@ public class UserService {
         return authData;
     }
 
+    public void clear() {
+        dataAccess.clear();
+    }
+
 
     public static String generateToken() {
         return UUID.randomUUID().toString();

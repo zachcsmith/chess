@@ -20,7 +20,7 @@ public class Server {
         server = Javalin.create(config -> config.staticFiles.add("web"));
 
         // Register your endpoints and exception handlers here.
-        server.delete("db", ctx -> ctx.result("{}")); // call clear method to go run it in the DataAccess layer
+        server.delete("db", this::clear); // call clear method to go run it in the DataAccess layer
         server.post("user", ctx -> register(ctx));// can use method reference syntax to directly talk to register()
 
     }
@@ -39,6 +39,10 @@ public class Server {
             //need more logic
             ctx.status(403).result();
         }
+    }
+
+    private void clear(Context ctx) {
+        userService.clear();
     }
 
     public int run(int desiredPort) {

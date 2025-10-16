@@ -12,7 +12,14 @@ import static org.junit.jupiter.api.Assertions.*;
 public class ServiceTests {
 
     @Test
-    public void clear() {
+    public void clear() throws Exception {
+        DataAccess db = new MemoryDataAccess();
+        UserService userService = new UserService(db);
+        UserData newUser = new UserData("John", "xynd3", "john@email.com");
+        AuthData authData = userService.register(newUser);
+        assertNotNull(authData.username());
+        userService.clear();
+        assertNull(db.getUser("John"));
     }
 
 
