@@ -25,6 +25,7 @@ public class Server {
         server.delete("db", this::clear); // call clear method to go run it in the DataAccess layer
         server.post("user", this::register);// can use method reference syntax to directly talk to register()
         server.post("session", this::login);
+        server.delete("session", this::logout);
 
 
     }
@@ -78,11 +79,10 @@ public class Server {
     private void logout(Context ctx) {
         var serializer = new Gson();
         try {
-            String reqJson = ctx.body();
-            LogoutRequest req = serializer.fromJson(reqJson, LogoutRequest.class);
-            LogoutResult res = userService.logout(req);
+            String reqJson = ctx.header("authorization");
+            String req = serializer.fromJson(reqJson, String.class);
+            userService.logout(req);
             ctx.status(200);
-            ctx.result(serializer.toJson(res));
         } catch (UnauthorizedException e) {
             ctx.status(401);
             ctx.result(serializer.toJson(new ErrorResponseModel(e.getMessage())));

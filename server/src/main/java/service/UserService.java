@@ -26,8 +26,10 @@ public class UserService {
         if (user.username() == null || user.password() == null || user.email() == null) {
             throw new BadRequestException("Error: bad request");
         }
+        AuthData auth = new AuthData(generateToken(), user.username());
         dataAccess.createUser(user);
-        return new AuthData(generateToken(), user.username());
+        dataAccess.createAuth(auth);
+        return new AuthData(auth.authToken(), user.username());
     }
 
     public void clear() {
@@ -42,7 +44,20 @@ public class UserService {
         if (user == null || !Objects.equals(user.password(), request.password())) {
             throw new UnauthorizedException("Error: unauthorized");
         }
-        return new LoginResult(user.username(), generateToken());
+        String authToken = generateToken();
+        dataAccess.createAuth(new AuthData(authToken, user.username()));
+        return new LoginResult(user.username(), authToken);
+    }
+
+    public void logout(String authToken) throws UnauthorizedException {
+        if (authToken == null) {
+            throw new UnauthorizedException("Error: unauthorized");
+        }
+        AuthData auth = dataAccess.getAuth(authToken);
+        if (auth == null) {
+            throw new UnauthorizedException("Error: unauthorized");
+        }
+        dataAccess.deleteAuth(authToken);
     }
 
 

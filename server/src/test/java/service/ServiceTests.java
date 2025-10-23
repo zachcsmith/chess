@@ -73,5 +73,31 @@ public class ServiceTests {
             userService.login(req);
         });
     }
+
+    @Test
+    public void LogoutSuccess() throws Exception {
+        DataAccess db = new MemoryDataAccess();
+        UserService userService = new UserService(db);
+        userService.clear();
+        UserData newUser = new UserData("user", "pass", "john@email.com");
+        userService.register(newUser);
+        LoginRequest req = new LoginRequest("user", "pass");
+        LoginResult res = userService.login(req);
+        assertNotNull(db.getAuth(res.authToken()));
+        userService.logout(res.authToken());
+        assertNull(db.getAuth(res.authToken()));
+    }
+
+    @Test
+    public void LogoutFailNoUser() throws Exception {
+        DataAccess db = new MemoryDataAccess();
+        UserService userService = new UserService(db);
+        userService.clear();
+        UserData newUser = new UserData("user", "pass", "john@email.com");
+        userService.register(newUser);
+        assertThrows(UnauthorizedException.class, () -> {
+            userService.logout("Not a Valid Auth Token");
+        });
+    }
 }
 
