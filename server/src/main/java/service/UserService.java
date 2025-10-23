@@ -1,10 +1,13 @@
 package service;
 
 import dataaccess.DataAccess;
+import handlers.LoginRequest;
+import handlers.LoginResult;
 import model.*;
 import service.exceptions.AlreadyTakenException;
-import service.exceptions.BadRequestException;
+import service.exceptions.*;
 
+import java.util.Objects;
 import java.util.UUID;
 
 public class UserService {
@@ -29,6 +32,17 @@ public class UserService {
 
     public void clear() {
         dataAccess.clear();
+    }
+
+    public LoginResult login(LoginRequest request) throws BadRequestException, UnauthorizedException {
+        if (request == null || request.username() == null || request.password() == null) {
+            throw new BadRequestException("Error: bad request");
+        }
+        UserData user = dataAccess.getUser(request.username());
+        if (user == null || !Objects.equals(user.password(), request.password())) {
+            throw new UnauthorizedException("Error: unauthorized");
+        }
+        return new LoginResult(user.username(), generateToken());
     }
 
 

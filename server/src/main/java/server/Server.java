@@ -2,12 +2,14 @@ package server;
 
 import com.google.gson.Gson;
 import dataaccess.MemoryDataAccess;
+import handlers.*;
 import io.javalin.*;
 import io.javalin.http.Context;
 import model.*;
 import service.exceptions.AlreadyTakenException;
 import service.UserService;
 import service.exceptions.BadRequestException;
+import service.exceptions.UnauthorizedException;
 
 public class Server {
 
@@ -22,6 +24,7 @@ public class Server {
         // Register your endpoints and exception handlers here.
         server.delete("db", this::clear); // call clear method to go run it in the DataAccess layer
         server.post("user", this::register);// can use method reference syntax to directly talk to register()
+        server.post("session", this::login);
 
 
     }
@@ -50,6 +53,43 @@ public class Server {
         //option 1: hard code if/else for errors after sending error msg
         //option 2: expand DataAccessExecption
         //option 3: create new exception classes to sort easier ie: AlreadyTakenException
+    }
+
+    private void login(Context ctx) {
+        var serializer = new Gson();
+        try {
+            String reqJson = ctx.body();
+            LoginRequest req = serializer.fromJson(reqJson, LoginRequest.class);
+            LoginResult res = userService.login(req);
+            ctx.status(200);
+            ctx.result(serializer.toJson(res));
+        } catch (BadRequestException e) {
+            ctx.status(400);
+            ctx.result(serializer.toJson(new ErrorResponseModel(e.getMessage())));
+        } catch (UnauthorizedException e) {
+            ctx.status(401);
+            ctx.result(serializer.toJson(new ErrorResponseModel(e.getMessage())));
+        } catch (Exception e) {
+            ctx.status(500);
+            ctx.result(serializer.toJson(new ErrorResponseModel(e.getMessage())));
+        }
+    }
+
+    private void logout(Context ctx) {
+        var serializer = new Gson();
+        try {
+            String reqJson = ctx.body();
+            LogoutRequest req = serializer.fromJson(reqJson, LogoutRequest.class);
+            LogoutResult res = userService.logout(req);
+            ctx.status(200);
+            ctx.result(serializer.toJson(res));
+        } catch (UnauthorizedException e) {
+            ctx.status(401);
+            ctx.result(serializer.toJson(new ErrorResponseModel(e.getMessage())));
+        } catch (Exception e) {
+            ctx.status(500);
+            ctx.result(serializer.toJson(new ErrorResponseModel(e.getMessage())));
+        }
     }
 
     private void clear(Context ctx) {
