@@ -1,8 +1,9 @@
 package service;
 
 import dataaccess.DataAccess;
+import handlers.ListGamesResult;
 import handlers.LoginRequest;
-import handlers.LoginResult;
+import handlers.*;
 import model.*;
 import service.exceptions.AlreadyTakenException;
 import service.exceptions.*;

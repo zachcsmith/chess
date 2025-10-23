@@ -1,8 +1,10 @@
 package service;
 
+import chess.ChessGame;
 import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
 import dataaccess.MemoryDataAccess;
+import handlers.ListGamesResult;
 import handlers.LoginRequest;
 import handlers.LoginResult;
 import model.*;
@@ -41,7 +43,7 @@ public class ServiceTests {
         DataAccess db = new MemoryDataAccess();
         UserService userService = new UserService(db);
         userService.clear();
-        UserData newUser = new UserData("user", null, "john@email.com");
+        UserData newUser = new UserData("user", "pass", "john@email.com");
         userService.register(newUser);
         assertThrows(Exception.class, () -> {
             userService.register(newUser);
@@ -97,6 +99,39 @@ public class ServiceTests {
         userService.register(newUser);
         assertThrows(UnauthorizedException.class, () -> {
             userService.logout("Not a Valid Auth Token");
+        });
+    }
+
+    @Test
+    public void ListGamesSuccess() throws Exception {
+        DataAccess db = new MemoryDataAccess();
+        UserService userService = new UserService(db);
+        GameService gameService = new GameService(db);
+        db.clear();
+        UserData newUser = new UserData("user", "pass", "john@email.com");
+        userService.register(newUser);
+        LoginResult res = userService.login(new LoginRequest("user", "pass"));
+        AuthData auth = db.getAuth(res.authToken());
+        db.createGame(new GameData(1, null, null, "myGame", new ChessGame()));
+        ListGamesResult listRes = gameService.listGames(auth.authToken());
+        assertNotNull(listRes);
+        assertEquals(1, listRes.games().size());
+        assertEquals("myGame", listRes.games().getFirst().gameName());
+    }
+
+    @Test
+    public void ListGamesFailBadAuth() throws Exception {
+        DataAccess db = new MemoryDataAccess();
+        UserService userService = new UserService(db);
+        GameService gameService = new GameService(db);
+        db.clear();
+        UserData newUser = new UserData("user", "pass", "john@email.com");
+        userService.register(newUser);
+        LoginResult res = userService.login(new LoginRequest("user", "pass"));
+        AuthData auth = db.getAuth(res.authToken());
+        db.createGame(new GameData(1, null, null, "myGame", new ChessGame()));
+        assertThrows(UnauthorizedException.class, () -> {
+            gameService.listGames("Bad Auth");
         });
     }
 }

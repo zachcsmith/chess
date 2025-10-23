@@ -12,7 +12,6 @@ public class MemoryDataAccess implements DataAccess {
     private final HashMap<String, UserData> users = new HashMap<>();
     private final HashMap<String, AuthData> validAuths = new HashMap<>();
     private final HashMap<Integer, GameData> games = new HashMap<>();
-    int id = 1;
 
     //game hashmap and auth hashmap needed for future classes
     @Override
@@ -55,8 +54,7 @@ public class MemoryDataAccess implements DataAccess {
 
     @Override
     public void createGame(GameData game) {
-        games.put(id, game);
-        id += 1;
+        games.put(game.gameID(), game);
     }
 
     @Override
