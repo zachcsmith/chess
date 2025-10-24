@@ -4,10 +4,12 @@ import chess.ChessGame;
 import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
 import dataaccess.MemoryDataAccess;
+import handlers.CreateGameRequest;
 import handlers.ListGamesResult;
 import handlers.LoginRequest;
 import handlers.LoginResult;
 import model.*;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import service.exceptions.UnauthorizedException;
@@ -15,6 +17,7 @@ import service.exceptions.UnauthorizedException;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ServiceTests {
+
 
     @Test
     public void clear() throws Exception {
@@ -132,6 +135,32 @@ public class ServiceTests {
         db.createGame(new GameData(1, null, null, "myGame", new ChessGame()));
         assertThrows(UnauthorizedException.class, () -> {
             gameService.listGames("Bad Auth");
+        });
+    }
+
+    @Test
+    public void CreateGameSuccess() throws Exception {
+        DataAccess db = new MemoryDataAccess();
+        UserService userService = new UserService(db);
+        GameService gameService = new GameService(db);
+        db.clear();
+        UserData newUser = new UserData("user", "pass", "john@email.com");
+        userService.register(newUser);
+        LoginResult res = userService.login(new LoginRequest("user", "pass"));
+        String authToken = res.authToken();
+        gameService.createGame(new CreateGameRequest("myGame"), authToken);
+        assertEquals(1, gameService.listGames(authToken).games().size());
+        assertEquals("myGame", gameService.listGames(authToken).games().getFirst().gameName());
+    }
+
+    @Test
+    public void CreateGameFail() throws Exception {
+        DataAccess db = new MemoryDataAccess();
+        UserService userService = new UserService(db);
+        GameService gameService = new GameService(db);
+        db.clear();
+        assertThrows(UnauthorizedException.class, () -> {
+            gameService.createGame(new CreateGameRequest("game"), "Not Valid");
         });
     }
 }

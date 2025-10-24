@@ -30,7 +30,7 @@ public class Server {
         server.post("session", this::login);
         server.delete("session", this::logout);
         server.get("game", this::listGames);
-
+        server.post("game", this::createGame);
 
     }
 
@@ -83,8 +83,7 @@ public class Server {
     private void logout(Context ctx) {
         var serializer = new Gson();
         try {
-            String reqJson = ctx.header("authorization");
-            String req = serializer.fromJson(reqJson, String.class);
+            String req = ctx.header("authorization");
             userService.logout(req);
             ctx.status(200);
         } catch (UnauthorizedException e) {
@@ -99,8 +98,7 @@ public class Server {
     private void listGames(Context ctx) {
         var serializer = new Gson();
         try {
-            String reqJson = ctx.header("authorization");
-            String req = serializer.fromJson(reqJson, String.class);
+            String req = ctx.header("authorization");
             //call to the service and register
             ListGamesResult res = gameService.listGames(req);
             ctx.status(200);
@@ -114,8 +112,54 @@ public class Server {
         }
     }
 
+    private void createGame(Context ctx) {
+        var serializer = new Gson();
+        try {
+            String authToken = ctx.header("authorization");
+            String reqJson = ctx.body();
+            CreateGameRequest req = serializer.fromJson(reqJson, CreateGameRequest.class);
+            CreateGameResult res = gameService.createGame(req, authToken);
+            ctx.status(200);
+            ctx.result(serializer.toJson(res));
+        } catch (BadRequestException e) {
+            ctx.status(400);
+            ctx.result(serializer.toJson(new ErrorResponseModel(e.getMessage())));
+        } catch (UnauthorizedException e) {
+            ctx.status(401);
+            ctx.result(serializer.toJson(new ErrorResponseModel(e.getMessage())));
+        } catch (Exception e) {
+            ctx.status(500);
+            ctx.result(serializer.toJson(new ErrorResponseModel(e.getMessage())));
+        }
+    }
+
+    private void joinGame(Context ctx) {
+        var serializer = new Gson();
+        try {
+            String authToken = ctx.header("authorization");
+            String reqJson = ctx.body();
+            JoinGameRequest req = serializer.fromJson(reqJson, JoinGameRequest.class);
+            JoinGameResult res = gameService.joinGame(req, authToken);
+            ctx.status(200);
+            ctx.result(serializer.toJson(res));
+        } catch (BadRequestException e) {
+            ctx.status(400);
+            ctx.result(serializer.toJson(new ErrorResponseModel(e.getMessage())));
+        } catch (UnauthorizedException e) {
+            ctx.status(401);
+            ctx.result(serializer.toJson(new ErrorResponseModel(e.getMessage())));
+        } catch (AlreadyTakenException e) {
+            ctx.status(403);
+            ctx.result(serializer.toJson(new ErrorResponseModel(e.getMessage())));
+        } catch (Exception e) {
+            ctx.status(500);
+            ctx.result(serializer.toJson(new ErrorResponseModel(e.getMessage())));
+        }
+    }
+
     private void clear(Context ctx) {
         userService.clear();
+        gameService.clear();
     }
 
     public int run(int desiredPort) {
