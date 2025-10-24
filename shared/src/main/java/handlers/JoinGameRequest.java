@@ -1,4 +1,6 @@
 package handlers;
 
-public record JoinGameRequest(String playerColor, Integer gameID) {
+import chess.ChessGame;
+
+public record JoinGameRequest(ChessGame.TeamColor playerColor, Integer gameID) {
 }

@@ -4,14 +4,12 @@ import chess.ChessGame;
 import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
 import dataaccess.MemoryDataAccess;
-import handlers.CreateGameRequest;
-import handlers.ListGamesResult;
-import handlers.LoginRequest;
-import handlers.LoginResult;
+import handlers.*;
 import model.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import service.exceptions.AlreadyTakenException;
 import service.exceptions.UnauthorizedException;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -161,6 +159,39 @@ public class ServiceTests {
         db.clear();
         assertThrows(UnauthorizedException.class, () -> {
             gameService.createGame(new CreateGameRequest("game"), "Not Valid");
+        });
+    }
+
+    @Test
+    public void JoinGameSuccess() throws Exception {
+        DataAccess db = new MemoryDataAccess();
+        UserService userService = new UserService(db);
+        GameService gameService = new GameService(db);
+        db.clear();
+        UserData newUser = new UserData("user", "pass", "john@email.com");
+        userService.register(newUser);
+        LoginResult res = userService.login(new LoginRequest("user", "pass"));
+        String authToken = res.authToken();
+        gameService.createGame(new CreateGameRequest("myGame"), authToken);
+        gameService.joinGame(new JoinGameRequest(ChessGame.TeamColor.WHITE, 1), authToken);
+        assertEquals("user", gameService.listGames(authToken).games().getFirst().whiteUsername());
+    }
+
+    @Test
+    public void JoinGameFail() throws Exception {
+        DataAccess db = new MemoryDataAccess();
+        UserService userService = new UserService(db);
+        GameService gameService = new GameService(db);
+        db.clear();
+        UserData newUser = new UserData("user", "pass", "john@email.com");
+        userService.register(newUser);
+        AuthData sec_res = userService.register(new UserData("second_user", "pass", "email"));
+        LoginResult res = userService.login(new LoginRequest("user", "pass"));
+        String authToken = res.authToken();
+        gameService.createGame(new CreateGameRequest("myGame"), authToken);
+        gameService.joinGame(new JoinGameRequest(ChessGame.TeamColor.WHITE, 1), authToken);
+        assertThrows(AlreadyTakenException.class, () -> {
+            gameService.joinGame(new JoinGameRequest(ChessGame.TeamColor.WHITE, 1), sec_res.authToken());
         });
     }
 }
