@@ -184,13 +184,13 @@ public class ServiceTests {
         db.clear();
         UserData newUser = new UserData("user", "pass", "john@email.com");
         userService.register(newUser);
-        AuthData sec_res = userService.register(new UserData("second_user", "pass", "email"));
+        AuthData secondRes = userService.register(new UserData("second_user", "pass", "email"));
         LoginResult res = userService.login(new LoginRequest("user", "pass"));
         String authToken = res.authToken();
         gameService.createGame(new CreateGameRequest("myGame"), authToken);
         gameService.joinGame(new JoinGameRequest(ChessGame.TeamColor.WHITE, 1), authToken);
         assertThrows(AlreadyTakenException.class, () -> {
-            gameService.joinGame(new JoinGameRequest(ChessGame.TeamColor.WHITE, 1), sec_res.authToken());
+            gameService.joinGame(new JoinGameRequest(ChessGame.TeamColor.WHITE, 1), secondRes.authToken());
         });
     }
 }
