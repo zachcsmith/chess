@@ -5,6 +5,7 @@ import dataaccess.DataAccess;
 import handlers.CreateGameResult;
 import handlers.*;
 import model.GameData;
+import service.exceptions.AlreadyTakenException;
 import service.exceptions.BadRequestException;
 import service.exceptions.UnauthorizedException;
 
@@ -35,6 +36,25 @@ public class GameService {
         CreateGameResult res = new CreateGameResult(id);
         id += 1;
         return res;
+    }
+
+    public void joinGame(JoinGameRequest request, String authToken) throws UnauthorizedException, BadRequestException, AlreadyTakenException {
+        if (request == null || request.playerColor() == null || request.gameID() == null) {
+            throw new BadRequestException("Error: bad request");
+        }
+        if (authToken == null || dataAccess.getAuth(authToken) == null) {
+            throw new UnauthorizedException("Error: unauthorized");
+        }
+        String playerColor = request.playerColor();
+        GameData game = dataAccess.getGame(request.gameID());
+        if (game == null) {
+            throw new BadRequestException("Error: bad request");
+        }
+        if (!playerColor.equals("White") && !playerColor.equals("Black")) {
+            throw new BadRequestException("Error: bad request");
+        }
+
+
     }
 
     public void clear() {

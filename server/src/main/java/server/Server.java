@@ -139,9 +139,8 @@ public class Server {
             String authToken = ctx.header("authorization");
             String reqJson = ctx.body();
             JoinGameRequest req = serializer.fromJson(reqJson, JoinGameRequest.class);
-            JoinGameResult res = gameService.joinGame(req, authToken);
+            gameService.joinGame(req, authToken);
             ctx.status(200);
-            ctx.result(serializer.toJson(res));
         } catch (BadRequestException e) {
             ctx.status(400);
             ctx.result(serializer.toJson(new ErrorResponseModel(e.getMessage())));
