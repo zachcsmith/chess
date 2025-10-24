@@ -31,7 +31,7 @@ public class Server {
         server.delete("session", this::logout);
         server.get("game", this::listGames);
         server.post("game", this::createGame);
-
+        server.put("game", this::joinGame);
     }
 
     // this mirrors a register handler
