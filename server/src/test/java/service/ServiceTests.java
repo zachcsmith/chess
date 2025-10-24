@@ -30,7 +30,7 @@ public class ServiceTests {
 
 
     @Test
-    public void RegisterSuccess() throws Exception {
+    public void registerSuccess() throws Exception {
         DataAccess db = new MemoryDataAccess();
         UserService userService = new UserService(db);
         UserData newUser = new UserData("John", "xynd3", "john@email.com");
@@ -40,7 +40,7 @@ public class ServiceTests {
     }
 
     @Test
-    public void RegisterFailDoubleUser() throws Exception {
+    public void registerFailDoubleUser() throws Exception {
         DataAccess db = new MemoryDataAccess();
         UserService userService = new UserService(db);
         userService.clear();
@@ -52,7 +52,7 @@ public class ServiceTests {
     }
 
     @Test
-    public void LoginSuccess() throws Exception {
+    public void loginSuccess() throws Exception {
         DataAccess db = new MemoryDataAccess();
         UserService userService = new UserService(db);
         userService.clear();
@@ -65,7 +65,7 @@ public class ServiceTests {
     }
 
     @Test
-    public void LoginFailWrongPassword() throws Exception {
+    public void loginFailWrongPassword() throws Exception {
         DataAccess db = new MemoryDataAccess();
         UserService userService = new UserService(db);
         userService.clear();
@@ -78,7 +78,7 @@ public class ServiceTests {
     }
 
     @Test
-    public void LogoutSuccess() throws Exception {
+    public void logoutSuccess() throws Exception {
         DataAccess db = new MemoryDataAccess();
         UserService userService = new UserService(db);
         userService.clear();
@@ -92,7 +92,7 @@ public class ServiceTests {
     }
 
     @Test
-    public void LogoutFailNoUser() throws Exception {
+    public void logoutFailNoUser() throws Exception {
         DataAccess db = new MemoryDataAccess();
         UserService userService = new UserService(db);
         userService.clear();
@@ -104,7 +104,7 @@ public class ServiceTests {
     }
 
     @Test
-    public void ListGamesSuccess() throws Exception {
+    public void listGamesSuccess() throws Exception {
         DataAccess db = new MemoryDataAccess();
         UserService userService = new UserService(db);
         GameService gameService = new GameService(db);
@@ -121,7 +121,7 @@ public class ServiceTests {
     }
 
     @Test
-    public void ListGamesFailBadAuth() throws Exception {
+    public void listGamesFailBadAuth() throws Exception {
         DataAccess db = new MemoryDataAccess();
         UserService userService = new UserService(db);
         GameService gameService = new GameService(db);
@@ -137,7 +137,7 @@ public class ServiceTests {
     }
 
     @Test
-    public void CreateGameSuccess() throws Exception {
+    public void createGameSuccess() throws Exception {
         DataAccess db = new MemoryDataAccess();
         UserService userService = new UserService(db);
         GameService gameService = new GameService(db);
@@ -152,7 +152,7 @@ public class ServiceTests {
     }
 
     @Test
-    public void CreateGameFail() throws Exception {
+    public void createGameFail() throws Exception {
         DataAccess db = new MemoryDataAccess();
         UserService userService = new UserService(db);
         GameService gameService = new GameService(db);
@@ -163,7 +163,7 @@ public class ServiceTests {
     }
 
     @Test
-    public void JoinGameSuccess() throws Exception {
+    public void joinGameSuccess() throws Exception {
         DataAccess db = new MemoryDataAccess();
         UserService userService = new UserService(db);
         GameService gameService = new GameService(db);
@@ -178,7 +178,7 @@ public class ServiceTests {
     }
 
     @Test
-    public void JoinGameFail() throws Exception {
+    public void joinGameFailAlreadyTaken() throws Exception {
         DataAccess db = new MemoryDataAccess();
         UserService userService = new UserService(db);
         GameService gameService = new GameService(db);
