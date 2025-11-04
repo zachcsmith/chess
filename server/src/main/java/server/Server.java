@@ -22,6 +22,7 @@ public class Server {
         server = Javalin.create(config -> config.staticFiles.add("web"));
 
         var dataAccess = new MemoryDataAccess();
+        //var dataAccess = new MySqlDataAccess(); uncomment when done
         userService = new UserService(dataAccess);
         gameService = new GameService(dataAccess);
         // Register your endpoints and exception handlers here.

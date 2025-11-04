@@ -4,21 +4,62 @@ import model.AuthData;
 import model.GameData;
 import model.UserData;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class MySqlDataAccess implements DataAccess {
 
-    public MySqlDataAccess() throws DataAccessException {
+    public MySqlDataAccess() throws Exception {
         // create and configure sql database
+        configureDatabase();
     }
 
-    //private make userdata table in database
+    //can use an array for table implementation and loop through it for each table
+    //just creating and executing the statement
+    //private make tables in database
     //table = ""
     //table = "table text"
     //create table statement
     //execute update on statement
-    //private make gamedata table in database
-    //private make authdata table in database
+    //make gamedata table in database
+    //make authdata table in database
+    private final String[] createStatements = {
+            """
+            CREATE TABLE IF NOT EXISTS users (
+            username VARCHAR(255) NOT NULL PRIMARY KEY,
+            password VARCHAR(255) NOT NULL,
+            email VARCHAR(255)
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS auths (
+            username VARCHAR(255) NOT NULL,
+            authToken VARCHAR(255) NOT NULL PRIMARY KEY
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS games (
+            gameID INT NOT NULL,
+            whiteUsername VARCHAR(255),
+            blackUsername VARCHAR(255),
+            gameName VARCHAR(255),
+            chessGame TEXT,
+            PRIMARY KEY (gameID)
+            )
+            """
+    };
+
+    public void configureDatabase() throws SQLException, DataAccessException {
+        DatabaseManager.createDatabase();
+        try (Connection conn = DatabaseManager.getConnection()) {
+            for (String statement : createStatements) {
+                try (var preparedStatement = conn.prepareStatement(statement)) {
+                    preparedStatement.executeUpdate();
+                }
+            }
+        }
+    }
 
     @Override
     public void clear() {

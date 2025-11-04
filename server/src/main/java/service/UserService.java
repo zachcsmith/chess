@@ -19,7 +19,6 @@ public class UserService {
     }
 
     //make registerResult and registerRequest classes
-    //I broke this in implementing it
     public AuthData register(UserData user) throws AlreadyTakenException, BadRequestException {
         if (dataAccess.getUser(user.username()) != null) {
             throw new AlreadyTakenException("Error: already taken");
