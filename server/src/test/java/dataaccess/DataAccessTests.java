@@ -20,7 +20,11 @@ public class DataAccessTests {
         gameService = new GameService(sqlDataAccess);
         newUser = new UserData("John", "pass", "email.com");
     }
-    
+
+    @Test
+    public void getUserSuccess() throws Exception {
+
+    }
 
     @Test
     public void createUserSuccess() throws Exception {

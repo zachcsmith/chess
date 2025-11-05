@@ -9,7 +9,7 @@ public interface DataAccess {
 
     UserData getUser(String username);
 
-    void createUser(UserData user);
+    void createUser(UserData user) throws DataAccessException;
 
     AuthData getAuth(String authToken);
 

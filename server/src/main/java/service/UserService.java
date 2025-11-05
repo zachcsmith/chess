@@ -1,6 +1,7 @@
 package service;
 
 import dataaccess.DataAccess;
+import dataaccess.DataAccessException;
 import handlers.ListGamesResult;
 import handlers.LoginRequest;
 import handlers.*;
@@ -19,7 +20,7 @@ public class UserService {
     }
 
     //make registerResult and registerRequest classes
-    public AuthData register(UserData user) throws AlreadyTakenException, BadRequestException {
+    public AuthData register(UserData user) throws AlreadyTakenException, BadRequestException, DataAccessException {
         if (dataAccess.getUser(user.username()) != null) {
             throw new AlreadyTakenException("Error: already taken");
         }

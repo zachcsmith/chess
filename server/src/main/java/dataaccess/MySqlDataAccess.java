@@ -71,8 +71,18 @@ public class MySqlDataAccess implements DataAccess {
     }
 
     @Override
-    public void createUser(UserData user) {
- 
+    public void createUser(UserData user) throws DataAccessException {
+        String statement = "INSERT INTO users (username, password, email) VALUES (?, ?, ?)";
+        try (Connection conn = DatabaseManager.getConnection()) {
+            try (var preparedStatement = conn.prepareStatement(statement)) {
+                preparedStatement.setString(1, user.username());
+                preparedStatement.setString(2, user.password());
+                preparedStatement.setString(3, user.email());
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to create user", e);
+        }
     }
 
     @Override
