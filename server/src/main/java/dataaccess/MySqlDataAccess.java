@@ -29,7 +29,7 @@ public class MySqlDataAccess implements DataAccess {
             CREATE TABLE IF NOT EXISTS users (
             username VARCHAR(255) NOT NULL PRIMARY KEY,
             password VARCHAR(255) NOT NULL,
-            email VARCHAR(255)
+            email VARCHAR(255) NOT NULL
             )
             """,
             """
@@ -62,11 +62,33 @@ public class MySqlDataAccess implements DataAccess {
     }
 
     @Override
-    public void clear() {
+    public void clear() throws DataAccessException {
+        try (Connection conn = DatabaseManager.getConnection();
+             var statement = conn.createStatement()) {
+            statement.execute("TRUNCATE games");
+            statement.execute("TRUNCATE auths");
+            statement.execute("TRUNCATE users");
+        } catch (SQLException | DataAccessException e) {
+            throw new DataAccessException("Failed to clear database", e);
+        }
     }
 
     @Override
-    public UserData getUser(String username) {
+    public UserData getUser(String username) throws DataAccessException {
+        String statement = "SELECT username, password, email from users WHERE username = ?";
+        try (Connection conn = DatabaseManager.getConnection()) {
+            try (var preparedStatement = conn.prepareStatement(statement)) {
+                preparedStatement.setString(1, username);
+                var result = preparedStatement.executeQuery();
+                if (result.next()) {
+                    var pass = result.getString("password");
+                    var email = result.getString("email");
+                    return new UserData(username, pass, email);
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to get user", e);
+        }
         return null;
     }
 

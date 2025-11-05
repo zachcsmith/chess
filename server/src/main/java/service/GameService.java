@@ -2,6 +2,7 @@ package service;
 
 import chess.ChessGame;
 import dataaccess.DataAccess;
+import dataaccess.DataAccessException;
 import handlers.CreateGameResult;
 import handlers.*;
 import model.*;
@@ -17,14 +18,14 @@ public class GameService {
         this.dataAccess = dataAccess;
     }
 
-    public ListGamesResult listGames(String authToken) throws UnauthorizedException {
+    public ListGamesResult listGames(String authToken) throws UnauthorizedException, DataAccessException {
         if (authToken == null || dataAccess.getAuth(authToken) == null) {
             throw new UnauthorizedException("Error: unauthorized");
         }
         return new ListGamesResult(dataAccess.listGames());
     }
 
-    public CreateGameResult createGame(CreateGameRequest request, String authToken) throws UnauthorizedException, BadRequestException {
+    public CreateGameResult createGame(CreateGameRequest request, String authToken) throws UnauthorizedException, BadRequestException, DataAccessException {
         if (request == null || request.gameName() == null) {
             throw new BadRequestException("Error: bad request");
         }
@@ -38,7 +39,7 @@ public class GameService {
         return res;
     }
 
-    public void joinGame(JoinGameRequest request, String authToken) throws UnauthorizedException, BadRequestException, AlreadyTakenException {
+    public void joinGame(JoinGameRequest request, String authToken) throws UnauthorizedException, BadRequestException, AlreadyTakenException, DataAccessException {
         if (request == null || request.playerColor() == null || request.gameID() == null) {
             throw new BadRequestException("Error: bad request");
         }
@@ -70,7 +71,7 @@ public class GameService {
         }
     }
 
-    public void clear() {
+    public void clear() throws DataAccessException {
         dataAccess.clear();
     }
 }

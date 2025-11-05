@@ -1,6 +1,7 @@
 package server;
 
 import com.google.gson.Gson;
+import dataaccess.DataAccessException;
 import dataaccess.MemoryDataAccess;
 import handlers.*;
 import io.javalin.*;
@@ -157,7 +158,7 @@ public class Server {
         }
     }
 
-    private void clear(Context ctx) {
+    private void clear(Context ctx) throws DataAccessException {
         userService.clear();
         gameService.clear();
     }

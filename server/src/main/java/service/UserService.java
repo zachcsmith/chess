@@ -33,11 +33,11 @@ public class UserService {
         return new AuthData(auth.authToken(), user.username());
     }
 
-    public void clear() {
+    public void clear() throws DataAccessException {
         dataAccess.clear();
     }
 
-    public LoginResult login(LoginRequest request) throws BadRequestException, UnauthorizedException {
+    public LoginResult login(LoginRequest request) throws BadRequestException, UnauthorizedException, DataAccessException {
         if (request == null || request.username() == null || request.password() == null) {
             throw new BadRequestException("Error: bad request");
         }
@@ -50,7 +50,7 @@ public class UserService {
         return new LoginResult(user.username(), authToken);
     }
 
-    public void logout(String authToken) throws UnauthorizedException {
+    public void logout(String authToken) throws UnauthorizedException, DataAccessException {
         if (authToken == null) {
             throw new UnauthorizedException("Error: unauthorized");
         }

@@ -1,11 +1,11 @@
 package dataaccess;
 
 import model.*;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import service.GameService;
 import service.UserService;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class DataAccessTests {
     private static MySqlDataAccess sqlDataAccess;
@@ -21,6 +21,17 @@ public class DataAccessTests {
         newUser = new UserData("John", "pass", "email.com");
     }
 
+    @BeforeEach
+    public void reset() throws Exception {
+        sqlDataAccess.clear();
+    }
+
+    @AfterAll
+    public static void empty() throws Exception {
+        sqlDataAccess.clear();
+    }
+
+
     @Test
     public void getUserSuccess() throws Exception {
 
@@ -29,6 +40,13 @@ public class DataAccessTests {
     @Test
     public void createUserSuccess() throws Exception {
         sqlDataAccess.createUser(newUser);
+    }
+
+    @Test
+    public void clearSuccess() throws Exception {
+        sqlDataAccess.createUser(newUser);
+        sqlDataAccess.clear();
+        assertNull(sqlDataAccess.getUser(newUser.username()));
     }
 
 }
