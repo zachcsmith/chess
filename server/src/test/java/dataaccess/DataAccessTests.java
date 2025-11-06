@@ -4,6 +4,7 @@ import model.*;
 import org.junit.jupiter.api.*;
 import service.GameService;
 import service.UserService;
+import service.exceptions.AlreadyTakenException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -34,12 +35,31 @@ public class DataAccessTests {
 
     @Test
     public void getUserSuccess() throws Exception {
+        sqlDataAccess.createUser(newUser);
+        assertNotNull(sqlDataAccess.getUser(newUser.username()));
+        UserData res = sqlDataAccess.getUser(newUser.username());
+        assertEquals(newUser.username(), res.username());
+    }
 
+    @Test
+    public void getUserFail() throws Exception {
+        assertNull(sqlDataAccess.getUser(newUser.username()));
     }
 
     @Test
     public void createUserSuccess() throws Exception {
         sqlDataAccess.createUser(newUser);
+        UserData res = sqlDataAccess.getUser(newUser.username());
+        assertEquals(newUser.username(), res.username());
+    }
+
+    @Test
+    public void createUserFail() throws Exception {
+        sqlDataAccess.createUser(newUser);
+        UserData rereg = new UserData(newUser.username(), "yolo", "email");
+        assertThrows(DataAccessException.class, () -> {
+            sqlDataAccess.createUser(rereg);
+        });
     }
 
     @Test
