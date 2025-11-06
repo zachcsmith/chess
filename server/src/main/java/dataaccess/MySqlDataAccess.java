@@ -65,15 +65,17 @@ public class MySqlDataAccess implements DataAccess {
 
     @Override
     public void clear() throws DataAccessException {
-        try (Connection conn = DatabaseManager.getConnection();
-             var statement = conn.createStatement()) {
-            statement.execute("TRUNCATE games");
-            statement.execute("TRUNCATE auths");
-            statement.execute("TRUNCATE users");
+        try (Connection conn = DatabaseManager.getConnection()) {
+            try (var statement = conn.createStatement()) {
+                statement.execute("TRUNCATE games");
+                statement.execute("TRUNCATE auths");
+                statement.execute("TRUNCATE users");
+            }
         } catch (SQLException | DataAccessException e) {
-            throw new DataAccessException("Failed to clear database", e);
+            throw new DataAccessException("Error: Failed to clear database", e);
         }
     }
+
 
     @Override
     public UserData getUser(String username) throws DataAccessException {
@@ -89,7 +91,7 @@ public class MySqlDataAccess implements DataAccess {
                 }
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Failed to get user", e);
+            throw new DataAccessException("Error: Failed to get user", e);
         }
         return null;
     }
@@ -105,7 +107,7 @@ public class MySqlDataAccess implements DataAccess {
                 preparedStatement.executeUpdate();
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Failed to create user", e);
+            throw new DataAccessException("Error: Failed to create user", e);
         }
     }
 
@@ -122,7 +124,7 @@ public class MySqlDataAccess implements DataAccess {
                 }
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Failed to get auth", e);
+            throw new DataAccessException("Error: Failed to get auth", e);
         }
         return null;
     }
@@ -137,7 +139,7 @@ public class MySqlDataAccess implements DataAccess {
                 preparedStatement.executeUpdate();
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Failed to create auth", e);
+            throw new DataAccessException("Error: Failed to create auth", e);
         }
     }
 
@@ -153,7 +155,7 @@ public class MySqlDataAccess implements DataAccess {
                 }
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Failed to delete auth", e);
+            throw new DataAccessException("Error: Failed to delete auth", e);
         }
     }
 
@@ -173,7 +175,7 @@ public class MySqlDataAccess implements DataAccess {
                 }
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Failed to get game", e);
+            throw new DataAccessException("Error: Failed to get game", e);
         }
         return null;
     }
@@ -192,7 +194,7 @@ public class MySqlDataAccess implements DataAccess {
                 preparedStatement.executeUpdate();
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Failed to create game", e);
+            throw new DataAccessException("Error: Failed to create game", e);
         }
     }
 
@@ -209,12 +211,12 @@ public class MySqlDataAccess implements DataAccess {
                 preparedStatement.setInt(5, game.gameID());
                 int rowsAffected = preparedStatement.executeUpdate();
                 if (rowsAffected == 0) {
-                    throw new DataAccessException("No game with gameID: " + game.gameID());
+                    throw new DataAccessException("Error: No game with gameID: " + game.gameID());
                 }
                 return game;
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Failed to update game", e);
+            throw new DataAccessException("Error: Failed to update game", e);
         }
     }
 
@@ -235,7 +237,7 @@ public class MySqlDataAccess implements DataAccess {
                 }
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Failed to get list of games", e);
+            throw new DataAccessException("Error: Failed to get list of games", e);
         }
         return allGames;
     }

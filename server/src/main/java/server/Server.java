@@ -3,6 +3,7 @@ package server;
 import com.google.gson.Gson;
 import dataaccess.DataAccessException;
 import dataaccess.MemoryDataAccess;
+import dataaccess.MySqlDataAccess;
 import handlers.*;
 import io.javalin.*;
 import io.javalin.http.Context;
@@ -22,10 +23,14 @@ public class Server {
     public Server() {
         server = Javalin.create(config -> config.staticFiles.add("web"));
 
-        var dataAccess = new MemoryDataAccess();
-        //var dataAccess = new MySqlDataAccess(); uncomment when done
-        userService = new UserService(dataAccess);
-        gameService = new GameService(dataAccess);
+        //var dataAccess = new MemoryDataAccess();
+        try {
+            var dataAccess = new MySqlDataAccess();
+            userService = new UserService(dataAccess);
+            gameService = new GameService(dataAccess);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to initialize database", e);
+        }
         // Register your endpoints and exception handlers here.
         server.delete("db", this::clear); // call clear method to go run it in the DataAccess layer
         server.post("user", this::register);// can use method reference syntax to directly talk to register()
@@ -159,8 +164,17 @@ public class Server {
     }
 
     private void clear(Context ctx) throws DataAccessException {
-        userService.clear();
-        gameService.clear();
+        var serializer = new Gson();
+        try {
+            userService.clear();
+            gameService.clear();
+            ctx.status(200);
+        } catch (DataAccessException e) {
+            String json = new Gson().toJson(new ErrorResponseModel(e.getMessage()));
+            System.out.println("ERROR RESPONSE: " + json);
+            ctx.status(500);
+            ctx.result(serializer.toJson(new ErrorResponseModel(e.getMessage())));
+        }
     }
 
     public int run(int desiredPort) {
