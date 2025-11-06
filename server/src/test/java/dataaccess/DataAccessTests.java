@@ -124,4 +124,19 @@ public class DataAccessTests {
         assertThrows(DataAccessException.class, () ->
                 sqlDataAccess.createGame(new GameData(1, null, null, "faulty game", new ChessGame())));
     }
+
+    @Test
+    public void getGameSuccess() throws Exception {
+        sqlDataAccess.createGame(emptyGame);
+        GameData res = sqlDataAccess.getGame(emptyGame.gameID());
+        assertNotNull(res);
+        assertEquals(emptyGame.game(), res.game());
+    }
+
+    @Test
+    public void getGameFail() throws Exception {
+        assertNull(sqlDataAccess.getGame(0));
+    }
+
+
 }
