@@ -83,5 +83,18 @@ public class DataAccessTests {
                 sqlDataAccess.createAuth(new AuthData(null, newUser.username())));
     }
 
+    @Test
+    public void getAuthSuccess() throws Exception {
+        sqlDataAccess.createAuth(new AuthData("token", newUser.username()));
+        AuthData res = sqlDataAccess.getAuth("token");
+        assertNotNull(res);
+        assertEquals(newUser.username(), res.username());
+    }
+
+    @Test
+    public void getAuthFail() throws Exception {
+        assertNull(sqlDataAccess.getAuth("fake authToken"));
+    }
+
 
 }
