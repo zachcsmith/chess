@@ -6,6 +6,7 @@ import handlers.ListGamesResult;
 import handlers.LoginRequest;
 import handlers.*;
 import model.*;
+import org.mindrot.jbcrypt.BCrypt;
 import service.exceptions.AlreadyTakenException;
 import service.exceptions.*;
 
@@ -27,8 +28,11 @@ public class UserService {
         if (user.username() == null || user.password() == null || user.email() == null) {
             throw new BadRequestException("Error: bad request");
         }
+        String hashedPass = BCrypt.hashpw(user.password(), BCrypt.gensalt());
+        UserData hashedUser = new UserData(user.username(), hashedPass, user.email());
+
         AuthData auth = new AuthData(generateToken(), user.username());
-        dataAccess.createUser(user);
+        dataAccess.createUser(hashedUser);
         dataAccess.createAuth(auth);
         return new AuthData(auth.authToken(), user.username());
     }
@@ -42,7 +46,7 @@ public class UserService {
             throw new BadRequestException("Error: bad request");
         }
         UserData user = dataAccess.getUser(request.username());
-        if (user == null || !Objects.equals(user.password(), request.password())) {
+        if (user == null || !BCrypt.checkpw(request.password(), user.password())) {
             throw new UnauthorizedException("Error: unauthorized");
         }
         String authToken = generateToken();
