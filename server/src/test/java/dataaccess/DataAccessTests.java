@@ -1,5 +1,6 @@
 package dataaccess;
 
+import chess.ChessGame;
 import model.*;
 import org.junit.jupiter.api.*;
 import service.GameService;
@@ -13,6 +14,7 @@ public class DataAccessTests {
     private static UserService userService;
     private static GameService gameService;
     private static UserData newUser;
+    private static GameData emptyGame;
 
     @BeforeAll
     public static void init() throws Exception {
@@ -20,6 +22,7 @@ public class DataAccessTests {
         userService = new UserService(sqlDataAccess);
         gameService = new GameService(sqlDataAccess);
         newUser = new UserData("John", "pass", "email.com");
+        emptyGame = new GameData(1, null, null, "game", new ChessGame());
     }
 
     @BeforeEach
@@ -109,5 +112,16 @@ public class DataAccessTests {
                 sqlDataAccess.deleteAuth("fake token"));
     }
 
+    @Test
+    public void createGameSuccess() throws Exception {
+        sqlDataAccess.createGame(emptyGame);
+        assertNotNull(sqlDataAccess.getGame(emptyGame.gameID()));
+    }
 
+    @Test
+    public void createGameFail() throws Exception {
+        sqlDataAccess.createGame(emptyGame);
+        assertThrows(DataAccessException.class, () ->
+                sqlDataAccess.createGame(new GameData(1, null, null, "faulty game", new ChessGame())));
+    }
 }

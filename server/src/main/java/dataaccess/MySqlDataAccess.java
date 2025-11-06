@@ -1,5 +1,7 @@
 package dataaccess;
 
+import chess.ChessGame;
+import com.google.gson.Gson;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
@@ -40,7 +42,7 @@ public class MySqlDataAccess implements DataAccess {
             """,
             """
             CREATE TABLE IF NOT EXISTS games (
-            gameID INT NOT NULL,
+            gameID INT NOT NULL AUTO_INCREMENT,
             whiteUsername VARCHAR(255),
             blackUsername VARCHAR(255),
             gameName VARCHAR(255),
@@ -156,13 +158,42 @@ public class MySqlDataAccess implements DataAccess {
     }
 
     @Override
-    public GameData getGame(int gameID) {
+    public GameData getGame(int gameID) throws DataAccessException {
+        String statement = "SELECT whiteUsername, blackUsername, gameName, chessGame FROM games WHERE gameID=?";
+        try (Connection conn = DatabaseManager.getConnection()) {
+            try (var preparedStatement = conn.prepareStatement(statement)) {
+                preparedStatement.setInt(1, gameID);
+                var result = preparedStatement.executeQuery();
+                if (result.next()) {
+                    var whiteUsername = result.getString("whiteUsername");
+                    var blackUsername = result.getString("blackUsername");
+                    var gameName = result.getString("gameName");
+                    var chessGame = new Gson().fromJson(result.getString("chessGame"), ChessGame.class);
+                    return new GameData(gameID, whiteUsername, blackUsername, gameName, chessGame);
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to get auth", e);
+        }
         return null;
     }
 
     @Override
-    public void createGame(GameData game) {
-
+    public void createGame(GameData game) throws DataAccessException {
+        String chessGameString = new Gson().toJson(game.game());
+        String statement = "INSERT INTO games (gameID, whiteUsername, blackUsername, gameName, chessGame) VALUES (?, ?, ?, ?, ?)";
+        try (Connection conn = DatabaseManager.getConnection()) {
+            try (var preparedStatement = conn.prepareStatement(statement)) {
+                preparedStatement.setInt(1, game.gameID());
+                preparedStatement.setString(2, game.whiteUsername());
+                preparedStatement.setString(3, game.blackUsername());
+                preparedStatement.setString(4, game.gameName());
+                preparedStatement.setString(5, chessGameString);
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to create auth", e);
+        }
     }
 
     @Override
