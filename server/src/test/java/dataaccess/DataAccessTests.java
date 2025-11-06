@@ -138,5 +138,18 @@ public class DataAccessTests {
         assertNull(sqlDataAccess.getGame(0));
     }
 
+    @Test
+    public void updateGameSuccess() throws Exception {
+        sqlDataAccess.createGame(emptyGame);
+        sqlDataAccess.updateGame(new GameData(emptyGame.gameID(), "John", "George", emptyGame.gameName(), emptyGame.game()));
+        assertEquals("John", sqlDataAccess.getGame(emptyGame.gameID()).whiteUsername());
+    }
+
+    @Test
+    public void updateGameFail() throws Exception {
+        assertThrows(DataAccessException.class, () ->
+                sqlDataAccess.updateGame(emptyGame));
+    }
+
 
 }

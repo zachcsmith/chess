@@ -173,7 +173,7 @@ public class MySqlDataAccess implements DataAccess {
                 }
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Failed to get auth", e);
+            throw new DataAccessException("Failed to get game", e);
         }
         return null;
     }
@@ -192,13 +192,30 @@ public class MySqlDataAccess implements DataAccess {
                 preparedStatement.executeUpdate();
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Failed to create auth", e);
+            throw new DataAccessException("Failed to create game", e);
         }
     }
 
     @Override
-    public GameData updateGame(GameData game) {
-        return null;
+    public GameData updateGame(GameData game) throws DataAccessException {
+        String chessGameString = new Gson().toJson(game.game());
+        String statement = "UPDATE games SET whiteUsername=?, blackUsername=?, gameName=?, chessGame=? WHERE gameID=?";
+        try (Connection conn = DatabaseManager.getConnection()) {
+            try (var preparedStatement = conn.prepareStatement(statement)) {
+                preparedStatement.setString(1, game.whiteUsername());
+                preparedStatement.setString(2, game.blackUsername());
+                preparedStatement.setString(3, game.gameName());
+                preparedStatement.setString(4, chessGameString);
+                preparedStatement.setInt(5, game.gameID());
+                int rowsAffected = preparedStatement.executeUpdate();
+                if (rowsAffected == 0) {
+                    throw new DataAccessException("No game with gameID: " + game.gameID());
+                }
+                return game;
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to update game", e);
+        }
     }
 
     @Override
