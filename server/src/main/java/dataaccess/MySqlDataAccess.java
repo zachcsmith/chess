@@ -140,8 +140,19 @@ public class MySqlDataAccess implements DataAccess {
     }
 
     @Override
-    public void deleteAuth(String authToken) {
-
+    public void deleteAuth(String authToken) throws DataAccessException {
+        String statement = "DELETE FROM auths WHERE authToken = ?";
+        try (Connection conn = DatabaseManager.getConnection()) {
+            try (var preparedStatement = conn.prepareStatement(statement)) {
+                preparedStatement.setString(1, authToken);
+                int rowsAffected = preparedStatement.executeUpdate();
+                if (rowsAffected == 0) {
+                    throw new DataAccessException("No auth found");
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to delete auth", e);
+        }
     }
 
     @Override

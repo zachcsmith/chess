@@ -96,5 +96,18 @@ public class DataAccessTests {
         assertNull(sqlDataAccess.getAuth("fake authToken"));
     }
 
+    @Test
+    public void deleteAuthSuccess() throws Exception {
+        sqlDataAccess.createAuth(new AuthData("token", newUser.username()));
+        sqlDataAccess.deleteAuth("token");
+        assertNull(sqlDataAccess.getAuth("token"));
+    }
+
+    @Test
+    public void deleteAuthFail() throws Exception {
+        assertThrows(DataAccessException.class, () ->
+                sqlDataAccess.deleteAuth("fake token"));
+    }
+
 
 }
