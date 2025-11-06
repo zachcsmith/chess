@@ -108,13 +108,35 @@ public class MySqlDataAccess implements DataAccess {
     }
 
     @Override
-    public AuthData getAuth(String authToken) {
+    public AuthData getAuth(String authToken) throws DataAccessException {
+        String statement = "SELECT username, authToken from auths WHERE authToken = ?";
+        try (Connection conn = DatabaseManager.getConnection()) {
+            try (var preparedStatement = conn.prepareStatement(statement)) {
+                preparedStatement.setString(1, authToken);
+                var result = preparedStatement.executeQuery();
+                if (result.next()) {
+                    var username = result.getString("username");
+                    return new AuthData(authToken, username);
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to get auth", e);
+        }
         return null;
     }
 
     @Override
-    public void createAuth(AuthData authData) {
-
+    public void createAuth(AuthData authData) throws DataAccessException {
+        String statement = "INSERT INTO auths (username, authToken) VALUES (?, ?)";
+        try (Connection conn = DatabaseManager.getConnection()) {
+            try (var preparedStatement = conn.prepareStatement(statement)) {
+                preparedStatement.setString(1, authData.username());
+                preparedStatement.setString(2, authData.authToken());
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to create auth", e);
+        }
     }
 
     @Override

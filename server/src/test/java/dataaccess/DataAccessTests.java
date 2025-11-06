@@ -69,4 +69,19 @@ public class DataAccessTests {
         assertNull(sqlDataAccess.getUser(newUser.username()));
     }
 
+    @Test
+    public void createAuthSuccess() throws Exception {
+        sqlDataAccess.createAuth(new AuthData("token", newUser.username()));
+        assertNotNull(sqlDataAccess.getAuth("token"));
+        AuthData res = sqlDataAccess.getAuth("token");
+        assertEquals(newUser.username(), res.username());
+    }
+
+    @Test
+    public void createAuthFail() throws Exception {
+        assertThrows(DataAccessException.class, () ->
+                sqlDataAccess.createAuth(new AuthData(null, newUser.username())));
+    }
+
+
 }
