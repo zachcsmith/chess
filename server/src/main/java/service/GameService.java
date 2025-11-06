@@ -25,7 +25,8 @@ public class GameService {
         return new ListGamesResult(dataAccess.listGames());
     }
 
-    public CreateGameResult createGame(CreateGameRequest request, String authToken) throws UnauthorizedException, BadRequestException, DataAccessException {
+    public CreateGameResult createGame(CreateGameRequest request, String authToken) throws UnauthorizedException, BadRequestException,
+            DataAccessException {
         if (request == null || request.gameName() == null) {
             throw new BadRequestException("Error: bad request");
         }
@@ -39,7 +40,8 @@ public class GameService {
         return res;
     }
 
-    public void joinGame(JoinGameRequest request, String authToken) throws UnauthorizedException, BadRequestException, AlreadyTakenException, DataAccessException {
+    public void joinGame(JoinGameRequest request, String authToken) throws UnauthorizedException, BadRequestException,
+            AlreadyTakenException, DataAccessException {
         if (request == null || request.playerColor() == null || request.gameID() == null) {
             throw new BadRequestException("Error: bad request");
         }
