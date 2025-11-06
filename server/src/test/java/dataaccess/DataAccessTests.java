@@ -7,6 +7,8 @@ import service.GameService;
 import service.UserService;
 import service.exceptions.AlreadyTakenException;
 
+import java.util.ArrayList;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class DataAccessTests {
@@ -149,6 +151,18 @@ public class DataAccessTests {
     public void updateGameFail() throws Exception {
         assertThrows(DataAccessException.class, () ->
                 sqlDataAccess.updateGame(emptyGame));
+    }
+
+    @Test
+    public void listGamesSuccess() throws Exception {
+        sqlDataAccess.createGame(emptyGame);
+        sqlDataAccess.createGame(new GameData(2, null, null, "game2", new ChessGame()));
+        assertEquals(2, sqlDataAccess.listGames().size());
+    }
+
+    @Test
+    public void listGamesFail() throws Exception {
+        assertEquals(new ArrayList<>(), sqlDataAccess.listGames());
     }
 
 
