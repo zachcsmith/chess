@@ -22,10 +22,20 @@ public class ServerFacade {
         this.authToken = authToken;
     }
 
+    public void clear() {
+        var request = buildRequest("DELETE", "/db", null);
+        var response = sendRequest(request);
+        handleResponse(response, Void.class);
+    }
+
     public AuthData register(UserData req) throws ResponseException {
         var request = buildRequest("POST", "/user", req);
         var response = sendRequest(request);
-        return handleResponse(response, AuthData.class);
+        AuthData ret = handleResponse(response, AuthData.class);
+        if (ret != null) {
+            setAuthToken(ret.authToken());
+        }
+        return ret;
     }
 
     private HttpRequest buildRequest(String method, String path, Object body) {

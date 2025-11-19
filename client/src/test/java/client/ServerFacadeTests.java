@@ -22,6 +22,11 @@ public class ServerFacadeTests {
         facade = new ServerFacade(url);
     }
 
+    @BeforeEach
+    public void clearDatabase() {
+        facade.clear();
+    }
+
     @AfterAll
     static void stopServer() {
         server.stop();
