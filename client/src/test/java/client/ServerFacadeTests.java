@@ -3,6 +3,7 @@ package client;
 import model.UserData;
 import org.junit.jupiter.api.*;
 import server.Server;
+import ui.ResponseException;
 import ui.ServerFacade;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -34,10 +35,20 @@ public class ServerFacadeTests {
 
 
     @Test
-    public void RegisterSuccess() {
+    public void registerSuccess() {
         var authData = facade.register(new UserData("player1", "password", "p1@email.com"));
         assertEquals("player1", authData.username());
         assertTrue(authData.authToken().length() > 10);
     }
+
+    @Test
+    public void registerFail() {
+        var authData = facade.register(new UserData("player1", "password", "p1@email.com"));
+        assertEquals("player1", authData.username());
+        assertTrue(authData.authToken().length() > 10);
+        assertThrows(ResponseException.class, () ->
+                facade.register(new UserData("player1", "pass", "email")));
+    }
+
 
 }
