@@ -46,11 +46,30 @@ public class ChessClient {
         return state;
     }
 
+    private String help() {
+        if (state.equals(State.LOGGED_OUT)) {
+            return """
+                    - help
+                    - register <username> <password> <email>
+                    - login <username> <password>
+                    - quit
+                    """;
+        } else if (state.equals(State.LOGGED_IN)) {
+            return """
+                    - help
+                    - logout
+                    - create <game name>
+                    - list
+                    - play <game id>
+                    - observe <game id>
+                    """;
+        } else {
+            return "";
+        }
+    }
+
     private String register(String[] params) throws ResponseException {
         return "registered?";
     }
 
-    private String help() {
-        return "helping";
-    }
 }
