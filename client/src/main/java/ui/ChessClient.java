@@ -2,7 +2,7 @@ package ui;
 
 import static ui.EscapeSequences.*;
 
-import java.util.Scanner;
+import java.util.*;
 
 public class ChessClient {
     private State state = State.LOGGED_OUT;
@@ -19,11 +19,38 @@ public class ChessClient {
         while (!response.equals("quit")) {
             System.out.print("\n" + RESET_TEXT_COLOR + getState() + ">>> " + SET_TEXT_COLOR_GREEN);
             String line = scanner.nextLine();
-            System.out.print(line);
+            try {
+                response = eval(line);
+            } catch (Throwable e) {
+                var msg = e.toString();
+                System.out.print(msg);
+            }
+        }
+    }
+
+    public String eval(String input) {
+        try {
+            String[] tokens = input.toLowerCase().split(" ");
+            String cmd = (tokens.length > 0) ? tokens[0] : "help";
+            String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
+            return switch (cmd) {
+                case "register" -> register(params);
+                default -> help();
+            };
+        } catch (ResponseException ex) {
+            return ex.getMessage();
         }
     }
 
     public State getState() {
         return state;
+    }
+
+    private String register(String[] params) throws ResponseException {
+        return "registered?";
+    }
+
+    private String help() {
+        return "helping";
     }
 }
