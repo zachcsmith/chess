@@ -17,10 +17,11 @@ public class ChessClient {
         System.out.println("Welcome to Chess: type help to begin.");
         var response = "";
         while (!response.equals("quit")) {
-            System.out.print("\n" + RESET_TEXT_COLOR + getState() + ">>> " + SET_TEXT_COLOR_GREEN);
+            System.out.print("\n" + RESET_TEXT_COLOR + getState() + ">>> ");
             String line = scanner.nextLine();
             try {
                 response = eval(line);
+                System.out.print(SET_TEXT_COLOR_GREEN + response);
             } catch (Throwable e) {
                 var msg = e.toString();
                 System.out.print(msg);
@@ -35,6 +36,7 @@ public class ChessClient {
             String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
             return switch (cmd) {
                 case "register" -> register(params);
+                case "quit" -> "quit";
                 default -> help();
             };
         } catch (ResponseException ex) {
