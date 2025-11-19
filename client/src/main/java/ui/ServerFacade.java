@@ -23,7 +23,9 @@ public class ServerFacade {
     }
 
     public AuthData register(UserData req) throws ResponseException {
-        return null;
+        var request = buildRequest("POST", "/user", req);
+        var response = sendRequest(request);
+        return handleResponse(response, AuthData.class);
     }
 
     private HttpRequest buildRequest(String method, String path, Object body) {
