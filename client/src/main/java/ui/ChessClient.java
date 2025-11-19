@@ -1,5 +1,8 @@
 package ui;
 
+import model.*;
+import handlers.*;
+
 import static ui.EscapeSequences.*;
 
 import java.util.*;
@@ -17,7 +20,7 @@ public class ChessClient {
         System.out.println("Welcome to Chess: type help to begin.");
         var response = "";
         while (!response.equals("quit")) {
-            System.out.print("\n" + RESET_TEXT_COLOR + getState() + ">>> ");
+            System.out.print("\n" + RESET_TEXT_COLOR + state + ">>> ");
             String line = scanner.nextLine();
             try {
                 response = eval(line);
@@ -44,19 +47,19 @@ public class ChessClient {
         }
     }
 
-    public State getState() {
-        return state;
+    public boolean loggedIn() {
+        return state.equals(State.LOGGED_IN);
     }
 
     private String help() {
-        if (state.equals(State.LOGGED_OUT)) {
+        if (!loggedIn()) {
             return """
                     - help
                     - register <username> <password> <email>
                     - login <username> <password>
                     - quit
                     """;
-        } else if (state.equals(State.LOGGED_IN)) {
+        } else if (loggedIn()) {
             return """
                     - help
                     - logout
@@ -71,7 +74,17 @@ public class ChessClient {
     }
 
     private String register(String[] params) throws ResponseException {
-        return "registered?";
+        if (loggedIn()) {
+            throw new ResponseException("Logout first before creating a new user.");
+        } else {
+            if (params.length == 3) {
+                UserData req = new UserData(params[0], params[1], params[2]);
+                AuthData res = facade.register(req);
+                state = State.LOGGED_IN;
+                return "You have registered as " + params[0];
+            }
+            throw new ResponseException("Expected: <username> <password> <email>");
+        }
     }
 
 }
