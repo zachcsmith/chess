@@ -1,5 +1,6 @@
 package client;
 
+import handlers.LoginRequest;
 import model.UserData;
 import org.junit.jupiter.api.*;
 import server.Server;
@@ -13,6 +14,7 @@ public class ServerFacadeTests {
 
     private static Server server;
     private static ServerFacade facade;
+    private static UserData testUser;
 
     @BeforeAll
     public static void init() {
@@ -21,6 +23,7 @@ public class ServerFacadeTests {
         System.out.println("Started test HTTP server on " + port);
         String url = String.format("http://localhost:%d", port);
         facade = new ServerFacade(url);
+        testUser = new UserData("player", "password", "test@email.com");
     }
 
     @BeforeEach
@@ -50,5 +53,16 @@ public class ServerFacadeTests {
                 facade.register(new UserData("player1", "pass", "email")));
     }
 
+    @Test
+    public void loginSuccess() {
+        var authData = facade.register(new UserData("player1", "password", "p1@email.com"));
+    }
+
+    @Test
+    public void loginFail() {
+        var authData = facade.register(testUser);
+        assertThrows(ResponseException.class, () ->
+                facade.login(new LoginRequest("player1", "pass")));
+    }
 
 }

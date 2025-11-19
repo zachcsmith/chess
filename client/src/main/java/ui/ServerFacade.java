@@ -1,6 +1,8 @@
 package ui;
 
 import com.google.gson.Gson;
+import handlers.LoginRequest;
+import handlers.LoginResult;
 import model.*;
 
 import java.net.*;
@@ -32,6 +34,16 @@ public class ServerFacade {
         var request = buildRequest("POST", "/user", req);
         var response = sendRequest(request);
         AuthData ret = handleResponse(response, AuthData.class);
+        if (ret != null) {
+            setAuthToken(ret.authToken());
+        }
+        return ret;
+    }
+
+    public LoginResult login(LoginRequest req) throws ResponseException {
+        var request = buildRequest("POST", "/session", req);
+        var response = sendRequest(request);
+        LoginResult ret = handleResponse(response, LoginResult.class);
         if (ret != null) {
             setAuthToken(ret.authToken());
         }

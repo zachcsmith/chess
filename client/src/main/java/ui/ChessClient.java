@@ -1,5 +1,6 @@
 package ui;
 
+import chess.ChessGame;
 import model.*;
 import handlers.*;
 
@@ -11,6 +12,7 @@ public class ChessClient {
     private State state = State.LOGGED_OUT;
     private ServerFacade facade;
     Scanner scanner = new Scanner(System.in);
+    HashMap<Integer, String> games = new HashMap<>();
 
     public ChessClient(String port) {
         facade = new ServerFacade(port);
@@ -39,6 +41,7 @@ public class ChessClient {
             String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
             return switch (cmd) {
                 case "register" -> register(params);
+                case "login" -> login(params);
                 case "quit" -> "quit";
                 default -> help();
             };
@@ -84,6 +87,20 @@ public class ChessClient {
                 return "You have registered as " + params[0];
             }
             throw new ResponseException("Expected: <username> <password> <email>");
+        }
+    }
+
+    private String login(String[] params) throws ResponseException {
+        if (loggedIn()) {
+            throw new ResponseException("You are already logged in.");
+        } else {
+            if (params.length == 2) {
+                LoginRequest req = new LoginRequest(params[0], params[1]);
+                LoginResult res = facade.login(req);
+                state = State.LOGGED_IN;
+                return params[0] + " has logged in.";
+            }
+            throw new ResponseException("Expected: <username> <password>");
         }
     }
 
