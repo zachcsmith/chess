@@ -42,6 +42,7 @@ public class ChessClient {
             return switch (cmd) {
                 case "register" -> register(params);
                 case "login" -> login(params);
+                case "logout" -> logout(params);
                 case "quit" -> "quit";
                 default -> help();
             };
@@ -101,6 +102,16 @@ public class ChessClient {
                 return params[0] + " has logged in.";
             }
             throw new ResponseException("Expected: <username> <password>");
+        }
+    }
+
+    private String logout(String[] params) throws ResponseException {
+        if (!loggedIn()) {
+            throw new ResponseException("You are not logged in.");
+        } else {
+            facade.logout();
+            state = State.LOGGED_OUT;
+            return params[0] + "has logged out.";
         }
     }
 

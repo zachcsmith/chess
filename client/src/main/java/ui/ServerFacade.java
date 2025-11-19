@@ -50,6 +50,13 @@ public class ServerFacade {
         return ret;
     }
 
+    public void logout() throws ResponseException {
+        var request = buildRequest("DELETE", "/session", null);
+        var response = sendRequest(request);
+        handleResponse(response, null);
+        setAuthToken(null);
+    }
+
     private HttpRequest buildRequest(String method, String path, Object body) {
         var request = HttpRequest.newBuilder()
                 .uri(URI.create(serverUrl + path))

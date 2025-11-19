@@ -54,8 +54,26 @@ public class ServerFacadeTests {
     }
 
     @Test
+    public void logoutSuccess() {
+        var authData = facade.register(new UserData("player2", "password", "p1@email.com"));
+        facade.logout();
+        assertDoesNotThrow(() ->
+                facade.register(testUser));
+    }
+
+    @Test
+    public void logoutFail() {
+        assertThrows(ResponseException.class, () ->
+                facade.logout());
+    }
+
+    @Test
     public void loginSuccess() {
         var authData = facade.register(new UserData("player1", "password", "p1@email.com"));
+        facade.logout();
+        var result = facade.login(new LoginRequest("player1", "password"));
+        assertTrue(result.authToken().length() > 10);
+        assertEquals("player1", result.username());
     }
 
     @Test
