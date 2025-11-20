@@ -12,7 +12,7 @@ public class ChessClient {
     private State state = State.LOGGED_OUT;
     private ServerFacade facade;
     Scanner scanner = new Scanner(System.in);
-    HashMap<Integer, String> games = new HashMap<>();
+    HashMap<Integer, GameData> gameMap = new HashMap<>();
 
     public ChessClient(String port) {
         facade = new ServerFacade(port);
@@ -44,6 +44,7 @@ public class ChessClient {
                 case "login" -> login(params);
                 case "logout" -> logout();
                 case "create" -> create(params);
+                case "list" -> list();
                 case "quit" -> "quit";
                 default -> help();
             };
@@ -127,6 +128,40 @@ public class ChessClient {
             }
             throw new ResponseException("Expected: <game name>");
         }
+    }
+
+    private String list() throws ResponseException {
+        if (!loggedIn()) {
+            throw new ResponseException("you are not logged in.");
+        }
+        ListGamesResult res = facade.list();
+        if (res.games().isEmpty()) {
+            return "No games exist.";
+        }
+        int count = 1;
+        String white;
+        String black;
+        for (GameData game : res.games()) {
+            String[] players = getPlayers(game);
+            gameMap.put(count, game);
+            System.out.println(count + ": " + game.gameName());
+            System.out.println("White Player: " + players[0] + ", Black Player: " + players[1]);
+            System.out.println();
+            count++;
+        }
+        return "All games have been listed";
+    }
+
+    private static String[] getPlayers(GameData game) {
+        String white = game.whiteUsername();
+        String black = game.blackUsername();
+        if (game.whiteUsername() == null) {
+            white = "Empty";
+        }
+        if (game.blackUsername() == null) {
+            black = "Empty";
+        }
+        return new String[]{white, black};
     }
 
 }

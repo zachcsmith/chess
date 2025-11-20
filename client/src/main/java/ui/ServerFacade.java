@@ -1,10 +1,7 @@
 package ui;
 
 import com.google.gson.Gson;
-import handlers.CreateGameRequest;
-import handlers.CreateGameResult;
-import handlers.LoginRequest;
-import handlers.LoginResult;
+import handlers.*;
 import model.*;
 
 import java.net.*;
@@ -63,6 +60,12 @@ public class ServerFacade {
         var request = buildRequest("POST", "/game", req);
         var response = sendRequest(request);
         return handleResponse(response, CreateGameResult.class);
+    }
+
+    public ListGamesResult list() throws ResponseException {
+        var request = buildRequest("GET", "/game", null);
+        var response = sendRequest(request);
+        return handleResponse(response, ListGamesResult.class);
     }
 
     private HttpRequest buildRequest(String method, String path, Object body) {
