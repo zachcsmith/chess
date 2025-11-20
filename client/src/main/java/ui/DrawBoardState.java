@@ -31,11 +31,20 @@ public class DrawBoardState {
     }
 
     private void drawHeader() {
-
+        String[] headers;
         if (whitePerspective) {
-            out.print(SET_BG_COLOR_DARK_GREY + SET_TEXT_COLOR_WHITE);
-            out.print("   ");
+            headers = new String[]{"a", "b", "c", "d", "e", "f", "g", "h"};
+        } else {
+            headers = new String[]{"h", "g", "f", "e", "d", "c", "b", "a"};
         }
+        out.print(SET_BG_COLOR_DARK_GREY + SET_TEXT_COLOR_LIGHT_GREY);
+        out.print("   ");
+        for (String letter : headers) {
+            out.print(" " + letter + " ");
+        }
+        out.print("   ");
+        out.print(RESET_BG_COLOR + RESET_TEXT_COLOR);
+        out.println();
     }
 
     private void drawRow(int row) {

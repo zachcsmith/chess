@@ -1,5 +1,6 @@
 package ui;
 
+import chess.ChessBoard;
 import chess.ChessGame;
 import model.*;
 import handlers.*;
@@ -45,6 +46,7 @@ public class ChessClient {
                 case "logout" -> logout();
                 case "create" -> create(params);
                 case "list" -> list();
+                case "observe" -> observe(params);
                 case "quit" -> "quit";
                 default -> help();
             };
@@ -162,6 +164,12 @@ public class ChessClient {
             black = "Empty";
         }
         return new String[]{white, black};
+    }
+
+    private String observe(String[] params) {
+        DrawBoardState boardPainter = new DrawBoardState(new ChessBoard(), true);
+        boardPainter.drawBoard();
+        return "";
     }
 
 }
