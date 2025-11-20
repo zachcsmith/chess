@@ -167,7 +167,9 @@ public class ChessClient {
     }
 
     private String observe(String[] params) {
-        DrawBoardState boardPainter = new DrawBoardState(new ChessBoard(), true);
+        ChessBoard testBoard = new ChessBoard();
+        testBoard.resetBoard();
+        DrawBoardState boardPainter = new DrawBoardState(testBoard, false);
         boardPainter.drawBoard();
         return "";
     }
