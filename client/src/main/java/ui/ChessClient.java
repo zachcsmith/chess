@@ -188,6 +188,7 @@ public class ChessClient {
     }
 
     private String join(String[] params) {
+        ChessGame.TeamColor color;
         if (!loggedIn()) {
             throw new ResponseException("You are not logged in.");
         } else {
@@ -196,15 +197,20 @@ public class ChessClient {
                     int gameNum = Integer.parseInt(params[0]);
                     GameData game = gameMap.get(gameNum);
                     if (Objects.equals(params[1], "white")) {
-                        facade.join(new JoinGameRequest(ChessGame.TeamColor.WHITE, game.gameID()));
+                        color = ChessGame.TeamColor.WHITE;
+                    } else if (Objects.equals(params[1], "black")) {
+                        color = ChessGame.TeamColor.BLACK;
                     } else {
-                        facade.join(new JoinGameRequest(ChessGame.TeamColor.BLACK, game.gameID()));
+                        throw new ResponseException("Color must be white or black.");
                     }
+                    facade.join(new JoinGameRequest(color, game.gameID()));
                     ChessBoard board = game.game().getBoard();
-                    DrawBoardState boardPainter = new DrawBoardState(board, true);
+                    DrawBoardState boardPainter = new DrawBoardState(board, color == ChessGame.TeamColor.WHITE);
                     boardPainter.drawBoard();
                     return "Joined " + game.gameName() + " as " + params[1];
-                } catch (Exception e) {
+                } catch (NumberFormatException e) {
+                    throw new ResponseException("Invalid ID");
+                } catch (NullPointerException e) {
                     throw new ResponseException("Not a valid ID");
                 }
             }

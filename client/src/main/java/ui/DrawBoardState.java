@@ -78,11 +78,7 @@ public class DrawBoardState {
 
     private void drawSquare(int row, int col) {
         boolean light;
-        if (whitePerspective) {
-            light = (row + col) % 2 == 0;
-        } else {
-            light = (row + col) % 2 == 1;
-        }
+        light = (row + col) % 2 == 1;
         if (light) {
             out.print(SET_BG_COLOR_LIGHT_GREY);
         } else {
