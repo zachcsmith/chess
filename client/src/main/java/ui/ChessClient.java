@@ -167,11 +167,22 @@ public class ChessClient {
     }
 
     private String observe(String[] params) {
-        ChessBoard testBoard = new ChessBoard();
-        testBoard.resetBoard();
-        DrawBoardState boardPainter = new DrawBoardState(testBoard, false);
-        boardPainter.drawBoard();
-        return "";
+        if (!loggedIn()) {
+            throw new ResponseException("You are not logged in.");
+        } else {
+            if (params.length == 1) {
+                try {
+                    int gameNum = Integer.parseInt(params[0]);
+                    GameData game = gameMap.get(gameNum);
+                    ChessBoard board = game.game().getBoard();
+                    DrawBoardState boardPainter = new DrawBoardState(board, true);
+                    boardPainter.drawBoard();
+                    return "Now observing " + game.gameName();
+                } catch (Exception e) {
+                    throw new ResponseException("Not a valid ID");
+                }
+            }
+        }
+        throw new ResponseException("Expected: <game ID>");
     }
-
 }

@@ -68,6 +68,12 @@ public class ServerFacade {
         return handleResponse(response, ListGamesResult.class);
     }
 
+    public void join(JoinGameRequest req) throws ResponseException {
+        var request = buildRequest("PUT", "/game", req);
+        var response = sendRequest(request);
+        handleResponse(response, null);
+    }
+
     private HttpRequest buildRequest(String method, String path, Object body) {
         var request = HttpRequest.newBuilder()
                 .uri(URI.create(serverUrl + path))

@@ -11,8 +11,8 @@ import java.nio.charset.StandardCharsets;
 import static ui.EscapeSequences.*;
 
 public class DrawBoardState {
-    private boolean whitePerspective;
-    private ChessBoard board;
+    private final boolean whitePerspective;
+    private final ChessBoard board;
     private final PrintStream out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
 
     public DrawBoardState(ChessBoard importedBoard, boolean whitePerspective) {
