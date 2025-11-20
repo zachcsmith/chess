@@ -7,7 +7,9 @@ import model.GameData;
 import model.UserData;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 
 public class MySqlDataAccess implements DataAccess {
@@ -43,8 +45,8 @@ public class MySqlDataAccess implements DataAccess {
             """
             CREATE TABLE IF NOT EXISTS games (
             gameID INT NOT NULL AUTO_INCREMENT,
-            whiteUsername VARCHAR(255),
-            blackUsername VARCHAR(255),
+            whiteUsername VARCHAR(255) DEFAULT NULL,
+            blackUsername VARCHAR(255) DEFAULT NULL,
             gameName VARCHAR(255),
             chessGame TEXT,
             PRIMARY KEY (gameID)
@@ -119,6 +121,7 @@ public class MySqlDataAccess implements DataAccess {
                 preparedStatement.setString(1, authToken);
                 var result = preparedStatement.executeQuery();
                 if (result.next()) {
+                    //maybe make this better not slecting the auth or grabbing both
                     var username = result.getString("username");
                     return new AuthData(authToken, username);
                 }
@@ -181,21 +184,23 @@ public class MySqlDataAccess implements DataAccess {
     }
 
     @Override
-    public void createGame(GameData game) throws DataAccessException {
+    public int createGame(GameData game) throws DataAccessException {
         String chessGameString = new Gson().toJson(game.game());
-        String statement = "INSERT INTO games (gameID, whiteUsername, blackUsername, gameName, chessGame) VALUES (?, ?, ?, ?, ?)";
+        String statement = "INSERT INTO games (gameName, chessGame) VALUES (?, ?)";
         try (Connection conn = DatabaseManager.getConnection()) {
-            try (var preparedStatement = conn.prepareStatement(statement)) {
-                preparedStatement.setInt(1, game.gameID());
-                preparedStatement.setString(2, game.whiteUsername());
-                preparedStatement.setString(3, game.blackUsername());
-                preparedStatement.setString(4, game.gameName());
-                preparedStatement.setString(5, chessGameString);
+            try (var preparedStatement = conn.prepareStatement(statement, Statement.RETURN_GENERATED_KEYS)) {
+                preparedStatement.setString(1, game.gameName());
+                preparedStatement.setString(2, chessGameString);
                 preparedStatement.executeUpdate();
+                ResultSet rs = preparedStatement.getGeneratedKeys();
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
             }
         } catch (SQLException e) {
             throw new DataAccessException("Error: Failed to create game", e);
         }
+        throw new DataAccessException("Error: did not generate key.");
     }
 
     @Override

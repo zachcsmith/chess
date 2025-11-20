@@ -211,7 +211,11 @@ public class ChessClient {
                 } catch (NumberFormatException e) {
                     throw new ResponseException("Invalid ID");
                 } catch (NullPointerException e) {
-                    throw new ResponseException("Not a valid ID");
+                    if (gameMap == null) {
+                        throw new ResponseException("List games to see available games");
+                    } else {
+                        throw new ResponseException("Invalid ID");
+                    }
                 }
             }
         }

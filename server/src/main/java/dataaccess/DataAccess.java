@@ -19,7 +19,7 @@ public interface DataAccess {
 
     GameData getGame(int gameID) throws DataAccessException;
 
-    void createGame(GameData game) throws DataAccessException;
+    int createGame(GameData game) throws DataAccessException;
 
     GameData updateGame(GameData game) throws DataAccessException;
 

@@ -34,7 +34,7 @@ public class GameService {
             throw new UnauthorizedException("Error: unauthorized");
         }
         GameData game = new GameData(id, null, null, request.gameName(), new ChessGame());
-        dataAccess.createGame(game);
+        id = dataAccess.createGame(game);
         CreateGameResult res = new CreateGameResult(id);
         id += 1;
         return res;
