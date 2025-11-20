@@ -1,6 +1,8 @@
 package ui;
 
 import com.google.gson.Gson;
+import handlers.CreateGameRequest;
+import handlers.CreateGameResult;
 import handlers.LoginRequest;
 import handlers.LoginResult;
 import model.*;
@@ -55,6 +57,12 @@ public class ServerFacade {
         var response = sendRequest(request);
         handleResponse(response, null);
         setAuthToken(null);
+    }
+
+    public CreateGameResult create(CreateGameRequest req) throws ResponseException {
+        var request = buildRequest("POST", "/game", req);
+        var response = sendRequest(request);
+        return handleResponse(response, CreateGameResult.class);
     }
 
     private HttpRequest buildRequest(String method, String path, Object body) {

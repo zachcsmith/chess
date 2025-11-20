@@ -1,5 +1,6 @@
 package client;
 
+import handlers.CreateGameRequest;
 import handlers.LoginRequest;
 import model.UserData;
 import org.junit.jupiter.api.*;
@@ -81,6 +82,22 @@ public class ServerFacadeTests {
         var authData = facade.register(testUser);
         assertThrows(ResponseException.class, () ->
                 facade.login(new LoginRequest("player1", "pass")));
+    }
+
+    @Test
+    public void createSuccess() {
+        facade.register(testUser);
+        facade.create(new CreateGameRequest("game1"));
+        var result = facade.create(new CreateGameRequest("myGame"));
+        assertNotNull(result.gameID());
+        assertTrue(result.gameID() > 0);
+    }
+
+    @Test
+    public void createFail() {
+        facade.register(testUser);
+        assertThrows(ResponseException.class, () ->
+                facade.create(new CreateGameRequest(null)));
     }
 
 }

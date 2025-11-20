@@ -43,6 +43,7 @@ public class ChessClient {
                 case "register" -> register(params);
                 case "login" -> login(params);
                 case "logout" -> logout();
+                case "create" -> create(params);
                 case "quit" -> "quit";
                 default -> help();
             };
@@ -112,6 +113,19 @@ public class ChessClient {
             facade.logout();
             state = State.LOGGED_OUT;
             return "You have logged out.";
+        }
+    }
+
+    private String create(String[] params) throws ResponseException {
+        if (!loggedIn()) {
+            throw new ResponseException("you are not logged in.");
+        } else {
+            if (params.length == 1) {
+                CreateGameRequest req = new CreateGameRequest(params[0]);
+                CreateGameResult res = facade.create(req);
+                return "The game " + params[0] + " was created.";
+            }
+            throw new ResponseException("Expected: <game name>");
         }
     }
 
