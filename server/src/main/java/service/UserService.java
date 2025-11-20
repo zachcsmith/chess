@@ -23,7 +23,7 @@ public class UserService {
     //make registerResult and registerRequest classes
     public AuthData register(UserData user) throws AlreadyTakenException, BadRequestException, DataAccessException {
         if (dataAccess.getUser(user.username()) != null) {
-            throw new AlreadyTakenException("Error: already taken");
+            throw new AlreadyTakenException("Error: username already taken");
         }
         if (user.username() == null || user.password() == null || user.email() == null) {
             throw new BadRequestException("Error: bad request");
