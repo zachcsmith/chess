@@ -47,6 +47,7 @@ public class ChessClient {
                 case "create" -> create(params);
                 case "list" -> list();
                 case "observe" -> observe(params);
+                case "join" -> join(params);
                 case "quit" -> "quit";
                 default -> help();
             };
@@ -73,7 +74,7 @@ public class ChessClient {
                     - logout
                     - create <game name>
                     - list
-                    - play <game id>
+                    - join <game id> <team color>
                     - observe <game id>
                     """;
         } else {
@@ -184,5 +185,30 @@ public class ChessClient {
             }
         }
         throw new ResponseException("Expected: <game ID>");
+    }
+
+    private String join(String[] params) {
+        if (!loggedIn()) {
+            throw new ResponseException("You are not logged in.");
+        } else {
+            if (params.length == 2) {
+                try {
+                    int gameNum = Integer.parseInt(params[0]);
+                    GameData game = gameMap.get(gameNum);
+                    if (Objects.equals(params[1], "white")) {
+                        facade.join(new JoinGameRequest(ChessGame.TeamColor.WHITE, game.gameID()));
+                    } else {
+                        facade.join(new JoinGameRequest(ChessGame.TeamColor.BLACK, game.gameID()));
+                    }
+                    ChessBoard board = game.game().getBoard();
+                    DrawBoardState boardPainter = new DrawBoardState(board, true);
+                    boardPainter.drawBoard();
+                    return "Joined " + game.gameName() + " as " + params[1];
+                } catch (Exception e) {
+                    throw new ResponseException("Not a valid ID");
+                }
+            }
+        }
+        throw new ResponseException("Expected: <game id> <team color>");
     }
 }

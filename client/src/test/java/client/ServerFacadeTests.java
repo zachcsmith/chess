@@ -1,6 +1,8 @@
 package client;
 
+import chess.ChessGame;
 import handlers.CreateGameRequest;
+import handlers.JoinGameRequest;
 import handlers.ListGamesResult;
 import handlers.LoginRequest;
 import model.UserData;
@@ -114,6 +116,23 @@ public class ServerFacadeTests {
     public void listFail() {
         assertThrows(ResponseException.class, () ->
                 facade.list());
+    }
+
+    @Test
+    public void joinSuccess() {
+        facade.register(testUser);
+        facade.create(new CreateGameRequest("myGame"));
+        var list = facade.list();
+        facade.join(new JoinGameRequest(ChessGame.TeamColor.WHITE, list.games().getFirst().gameID()));
+        list = facade.list();
+        assertEquals("player", list.games().getFirst().whiteUsername());
+    }
+
+    @Test
+    public void joinFail() {
+        facade.register(testUser);
+        assertThrows(ResponseException.class, () ->
+                facade.join(new JoinGameRequest(ChessGame.TeamColor.WHITE, 1)));
     }
 
 }
