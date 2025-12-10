@@ -13,10 +13,11 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import service.*;
 import service.exceptions.UnauthorizedException;
 import websocket.commands.UserGameCommand;
-import websocket.messages.ErrorMessage;
+import websocket.messages.*;
 import websocket.messages.ServerMessage;
 
 import javax.management.Notification;
+import java.io.IOException;
 
 public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
 
@@ -80,16 +81,26 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         }
     }
 
-    public void connect(Session session, String username, Integer gameID, ChessGame.TeamColor color) throws DataAccessException {
+    public void connect(Session session, String username, Integer gameID, ChessGame.TeamColor color) throws DataAccessException, IOException {
         connections.add(gameID, username, session);
         GameData gameData = gameService.getGame(gameID);
-        if (gameData == null){return;}
+        if (gameData == null) {
+            return;
+        }
         ChessGame game = gameData.game();
         String playerType;
-        if (color == ChessGame.TeamColor.WHITE){playerType = "white";}
-        if (color == ChessGame.TeamColor.BLACK){playerType = "black";}
-        else {playerType = "observer";}
+        if (color == ChessGame.TeamColor.WHITE) {
+            playerType = "white";
+        }
+        if (color == ChessGame.TeamColor.BLACK) {
+            playerType = "black";
+        } else {
+            playerType = "observer";
+        }
         String message = username + " joined the game " + gameID + " as " + playerType;
-        NotificationMessage
+        NotificationMessage connectMessage = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
+        connections.broadcast(gameID, username, connectMessage);
+        LoadGameMessage gameMessage = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, game, playerType);
+        connections.sendMessage(session, gameMessage);
     }
 }
