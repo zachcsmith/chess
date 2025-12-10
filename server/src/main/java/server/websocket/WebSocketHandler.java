@@ -2,6 +2,7 @@ package server.websocket;
 
 import chess.ChessGame;
 import chess.ChessMove;
+import chess.ChessPosition;
 import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import dataaccess.DataAccessException;
@@ -164,7 +165,10 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             LoadGameMessage loadGameMessage = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, game);
             connections.broadcastToAll(gameID, loadGameMessage);
             NotificationMessage notificationMessage = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,
-                    String.format("the move %s has been made by %s", move, turn));
+                    String.format("the move %s to %s has been made by %s",
+                            positionToString(move.getStartPosition()),
+                            positionToString(move.getEndPosition())
+                            , turn));
             connections.broadcast(gameID, username, notificationMessage);
             ChessGame.TeamColor oppColor = (((turn.equals(ChessGame.TeamColor.WHITE)) ? ChessGame.TeamColor.BLACK : (ChessGame.TeamColor.WHITE)));
             String opp = (oppColor == ChessGame.TeamColor.WHITE ? gameData.whiteUsername() : gameData.blackUsername());
@@ -178,10 +182,20 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 gameService.updateGame(new GameData(gameID, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game));
                 connections.broadcastToAll(gameID, staleMessage);
             }
+            if (game.isInCheckmate(oppColor)) {
+                NotificationMessage mateMessage = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, String.format("%s is in checkmate, %s wins", opp, username));
+                game.setGameOver();
+                gameService.updateGame(new GameData(gameID, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game));
+                connections.broadcastToAll(gameID, mateMessage);
+            }
 
         } catch (InvalidMoveException e) {
             connections.sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "not a valid move"));
         }
+    }
 
+    private String positionToString(ChessPosition pos) {
+        char col = (char) ('a' + pos.getColumn() - 1);
+        return "" + col + pos.getRow();
     }
 }
