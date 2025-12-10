@@ -34,4 +34,36 @@ public class ConnectionHandler {
             session.getRemote().sendString(gson.toJson(message));
         }
     }
+
+    //sends message to all but the username in exclude
+    public void broadcast(int gameID, String excludeUsername, ServerMessage message) throws IOException {
+        if (!gameConnections.containsKey(gameID)) {
+            return;
+        }
+        var connections = gameConnections.get(gameID);
+        for (var entry : connections.entrySet()) {
+            String username = entry.getKey();
+            Session session = entry.getValue();
+            if (!username.equals(excludeUsername)) {
+                sendMessage(session, message);
+            }
+        }
+    }
+
+    //sends message to all sessions in game
+    public void broadcastToAll(int gameID, ServerMessage message) throws IOException {
+        if (!gameConnections.containsKey(gameID)) {
+            return;
+        }
+        for (Session session : gameConnections.get(gameID).values()) {
+            sendMessage(session, message);
+        }
+    }
+
+    public Session getSession(int gameID, String username) {
+        if (!gameConnections.containsKey(gameID)) {
+            return null;
+        }
+        return gameConnections.get(gameID).get(username);
+    }
 }
