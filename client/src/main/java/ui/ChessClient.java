@@ -1,7 +1,6 @@
 package ui;
 
-import chess.ChessBoard;
-import chess.ChessGame;
+import chess.*;
 import model.*;
 import handlers.*;
 import websocket.ServerMessageObserver;
@@ -11,6 +10,7 @@ import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
 
+import static chess.ChessPiece.PieceType.*;
 import static ui.EscapeSequences.*;
 
 import java.util.*;
@@ -63,6 +63,7 @@ public class ChessClient implements ServerMessageObserver {
                 case "redraw" -> redrawBoard();
                 case "leave" -> leave();
                 case "resign" -> resign();
+                case "move" -> makeMove(params);
                 case "quit" -> "quit";
                 default -> help();
             };
@@ -97,7 +98,7 @@ public class ChessClient implements ServerMessageObserver {
                     - help
                     - redraw
                     - leave
-                    - move
+                    - move <start position> <end position> <promotion(if applicable)>
                     - resign
                     - highlight
                     """;
@@ -284,6 +285,50 @@ public class ChessClient implements ServerMessageObserver {
         } else {
             return "Resignation cancelled, the game continues";
         }
+    }
+
+    public String makeMove(String[] params) {
+        if (state != State.IN_GAME) {
+            throw new ResponseException("Must be in a game to make a move");
+        }
+        if (params.length < 2 || params.length > 3) {
+            throw new ResponseException("expected <start position> <end position> <promotion(if applicable)>");
+        }
+        try {
+            String start = params[0].toLowerCase();
+            String end = params[1].toLowerCase();
+
+            ChessPosition startPos = getPosition(start);
+            ChessPosition endPos = getPosition(end);
+            ChessPiece.PieceType promo = null;
+            ChessMove move = new ChessMove(startPos, endPos, null);
+            if (params.length == 3) {
+                if (params[2].equals("queen")){move = new ChessMove(startPos, endPos, QUEEN);}
+                else if(params[2].equals("knight")){move = new ChessMove(startPos, endPos, KNIGHT);}
+                else if(params[2].equals("rook")){move = new ChessMove(startPos, endPos, ROOK);}
+                else if(params[2].equals("bishop")){move = new ChessMove(startPos, endPos, BISHOP);}
+                else{throw new ResponseException("invalid promotion piece");}
+            }
+            webSocketFacade.makeMove(authToken, currentGame, )
+            return ("move made");
+        } catch(Exception ex){
+            throw new ResponseException(ex.getMessage());
+        }
+    }
+
+    public ChessPosition getPosition(String pos){
+        if (pos.length() != 2){
+            throw new ResponseException("invalid move annotation");
+        }
+        char colChar = pos.charAt(0);
+        char rowChar = pos.charAt(1);
+        int col = colChar - 'a' + 1;
+        int row = rowChar - '0';
+
+        if (col <1 || col > 8 || row < 1 || row >8){
+            throw new ResponseException("invalid move annotation");
+        }
+        return new ChessPosition(row, col);
     }
 
     @Override
