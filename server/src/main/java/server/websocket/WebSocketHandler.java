@@ -2,6 +2,7 @@ package server.websocket;
 
 import chess.ChessGame;
 import chess.ChessMove;
+import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import dataaccess.DataAccessException;
 import dataaccess.MySqlDataAccess;
@@ -101,7 +102,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         String message = username + " joined the game " + gameID + " as " + playerType;
         NotificationMessage connectMessage = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
         connections.broadcast(gameID, username, connectMessage);
-        LoadGameMessage gameMessage = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, game, playerType);
+        LoadGameMessage gameMessage = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, game);
         connections.sendMessage(session, gameMessage);
     }
 
@@ -143,6 +144,43 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         ChessMove move = moveCommand.getMove();
         if (game.isGameOver()) {
             connections.sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "game is over and no moves may be made"));
+        }
+        ChessGame.TeamColor turn = game.getTeamTurn();
+        boolean isWhite = username.equals(gameData.whiteUsername());
+        boolean isBlack = username.equals(gameData.blackUsername());
+
+        if ((turn.equals(ChessGame.TeamColor.WHITE) && !isWhite) ||
+                (turn.equals(ChessGame.TeamColor.BLACK) && !isBlack)) {
+            connections.sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "not this user's turn"));
+            return;
+        }
+        if (!isBlack && !isWhite) {
+            connections.sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "you are not a player"));
+        }
+        try {
+            game.makeMove(move);
+            GameData newGame = new GameData(gameID, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game);
+            gameService.updateGame(newGame);
+            LoadGameMessage loadGameMessage = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, game);
+            connections.broadcastToAll(gameID, loadGameMessage);
+            NotificationMessage notificationMessage = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,
+                    String.format("the move %s has been made by %s", move, turn));
+            connections.broadcast(gameID, username, notificationMessage);
+            ChessGame.TeamColor oppColor = (((turn.equals(ChessGame.TeamColor.WHITE)) ? ChessGame.TeamColor.BLACK : (ChessGame.TeamColor.WHITE)));
+            String opp = (oppColor == ChessGame.TeamColor.WHITE ? gameData.whiteUsername() : gameData.blackUsername());
+            if (game.isInCheck(oppColor)) {
+                NotificationMessage checkMessage = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, String.format("%s is in check", opp));
+                connections.broadcastToAll(gameID, checkMessage);
+            }
+            if (game.isInStalemate(oppColor)) {
+                NotificationMessage staleMessage = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, String.format("%s is in stalemate", opp));
+                game.setGameOver();
+                gameService.updateGame(new GameData(gameID, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game));
+                connections.broadcastToAll(gameID, staleMessage);
+            }
+
+        } catch (InvalidMoveException e) {
+            connections.sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "not a valid move"));
         }
 
     }
