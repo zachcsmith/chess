@@ -6,6 +6,8 @@ import model.*;
 import handlers.*;
 import websocket.ServerMessageObserver;
 import websocket.WebSocketFacade;
+import websocket.messages.LoadGameMessage;
+import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
 
 import static ui.EscapeSequences.*;
@@ -17,6 +19,8 @@ public class ChessClient {
     private ServerFacade facade;
     Scanner scanner = new Scanner(System.in);
     String authToken = null;
+    Integer currentGame = null;
+    ChessGame.TeamColor playerTeam = null;
     HashMap<Integer, GameData> gameMap = new HashMap<>();
     private final WebSocketFacade webSocketFacade;
 
@@ -25,7 +29,16 @@ public class ChessClient {
         ServerMessageObserver observer = new ServerMessageObserver() {
             @Override
             public void notify(ServerMessage message) {
-                System.out.println("Server: ");
+                // Check the message type and print the content
+                if (message instanceof NotificationMessage notification) {
+                    System.out.println("\n<<< " + notification.getMessage());
+                } else if (message instanceof LoadGameMessage loadGame) {
+                    // Here is where you would call your board drawing logic
+                    System.out.println("\n<<< Game loaded! Current Turn: ");
+                }
+                // ... handle ErrorMessage ...
+                // Re-print the client prompt
+                System.out.print("\n" + RESET_TEXT_COLOR + state + ">>> ");
             }
         };
         webSocketFacade = new WebSocketFacade(port, observer);
@@ -60,6 +73,7 @@ public class ChessClient {
                 case "list" -> list();
                 case "observe" -> observe(params);
                 case "join" -> join(params);
+                case "redraw" -> redrawBoard();
                 case "quit" -> "quit";
                 default -> help();
             };
@@ -88,6 +102,15 @@ public class ChessClient {
                     - list
                     - join <game id> <team color>
                     - observe <game id>
+                    """;
+        } else if (state.equals(State.IN_GAME)) {
+            return """
+                    - help
+                    - redraw
+                    - leave
+                    - move
+                    - resign
+                    - highlight
                     """;
         } else {
             return "";
@@ -192,6 +215,8 @@ public class ChessClient {
                     DrawBoardState boardPainter = new DrawBoardState(board, true);
                     boardPainter.drawBoard();
                     webSocketFacade.connect(authToken, game.gameID());
+                    currentGame = game.gameID();
+                    playerTeam = ChessGame.TeamColor.WHITE;
                     return "Now observing " + game.gameName();
                 } catch (Exception e) {
                     throw new ResponseException("Not a valid ID");
@@ -218,9 +243,13 @@ public class ChessClient {
                         throw new ResponseException("Color must be white or black.");
                     }
                     facade.join(new JoinGameRequest(color, game.gameID()));
+                    webSocketFacade.connect(authToken, game.gameID());
                     ChessBoard board = game.game().getBoard();
                     DrawBoardState boardPainter = new DrawBoardState(board, color == ChessGame.TeamColor.WHITE);
                     boardPainter.drawBoard();
+                    state = State.IN_GAME;
+                    playerTeam = color;
+                    currentGame = game.gameID();
                     return "Joined " + game.gameName() + " as " + params[1];
                 } catch (NumberFormatException e) {
                     throw new ResponseException("Invalid ID");
@@ -234,5 +263,11 @@ public class ChessClient {
             }
         }
         throw new ResponseException("Expected: <game id> <team color>");
+    }
+
+    public String redrawBoard() {
+        ChessBoard board = gameMap.get(currentGame).game().getBoard();
+        DrawBoardState boardState = new DrawBoardState(board, playerTeam == ChessGame.TeamColor.WHITE);
+        return "Board has been redrawn";
     }
 }

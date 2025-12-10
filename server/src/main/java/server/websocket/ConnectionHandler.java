@@ -16,6 +16,7 @@ public class ConnectionHandler {
     public void add(int gameID, String username, Session session) {
         gameConnections.putIfAbsent(gameID, new ConcurrentHashMap<>());
         gameConnections.get(gameID).put(username, session);
+        System.out.println("added " + username + " to session " + session);
     }
 
     //removes session for the user and gameID if there are no useres left
@@ -40,6 +41,7 @@ public class ConnectionHandler {
         if (!gameConnections.containsKey(gameID)) {
             return;
         }
+        System.out.println("broadcasting, excluding " + excludeUsername);
         var connections = gameConnections.get(gameID);
         for (var entry : connections.entrySet()) {
             String username = entry.getKey();

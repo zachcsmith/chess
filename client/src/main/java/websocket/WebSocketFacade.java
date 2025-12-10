@@ -46,6 +46,7 @@ public class WebSocketFacade extends Endpoint {
     }
 
     private void handleIncomingMessage(String message) {
+        System.out.println("Received Raw JSON: " + message);
         ServerMessage serverMessage = new Gson().fromJson(message, ServerMessage.class);
         ServerMessage msg = switch (serverMessage.getServerMessageType()) {
             case NOTIFICATION -> new Gson().fromJson(message, NotificationMessage.class);

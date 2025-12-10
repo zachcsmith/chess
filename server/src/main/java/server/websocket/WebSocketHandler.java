@@ -68,9 +68,9 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
             switch (command.getCommandType()) {
                 case CONNECT -> connect(session, username, gameID, color);
-                case MAKE_MOVE -> makeMove(session, username, gameID, command.getMove());
-                case LEAVE -> leave(session, username, gameID);
-                case RESIGN -> resign(session, username, gameID);
+//                case MAKE_MOVE -> makeMove(session, username, gameID, command.getMove());
+//                case LEAVE -> leave(session, username, gameID);
+//                case RESIGN -> resign(session, username, gameID);
                 default ->
                         connections.sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Error: no command type found"));
             }
@@ -91,8 +91,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         String playerType;
         if (color == ChessGame.TeamColor.WHITE) {
             playerType = "white";
-        }
-        if (color == ChessGame.TeamColor.BLACK) {
+        } else if (color == ChessGame.TeamColor.BLACK) {
             playerType = "black";
         } else {
             playerType = "observer";
@@ -103,4 +102,6 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         LoadGameMessage gameMessage = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, game, playerType);
         connections.sendMessage(session, gameMessage);
     }
+
+    public void leave(Session session, )
 }
