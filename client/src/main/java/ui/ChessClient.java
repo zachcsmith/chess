@@ -4,6 +4,9 @@ import chess.ChessBoard;
 import chess.ChessGame;
 import model.*;
 import handlers.*;
+import websocket.ServerMessageObserver;
+import websocket.WebSocketFacade;
+import websocket.messages.ServerMessage;
 
 import static ui.EscapeSequences.*;
 
@@ -13,10 +16,19 @@ public class ChessClient {
     private State state = State.LOGGED_OUT;
     private ServerFacade facade;
     Scanner scanner = new Scanner(System.in);
+    String authToken = null;
     HashMap<Integer, GameData> gameMap = new HashMap<>();
+    private final WebSocketFacade webSocketFacade;
 
     public ChessClient(String port) {
         facade = new ServerFacade(port);
+        ServerMessageObserver observer = new ServerMessageObserver() {
+            @Override
+            public void notify(ServerMessage message) {
+                System.out.println("Server: ");
+            }
+        };
+        webSocketFacade = new WebSocketFacade(port, observer);
     }
 
     public void run() {
@@ -104,6 +116,7 @@ public class ChessClient {
                 LoginRequest req = new LoginRequest(params[0], params[1]);
                 LoginResult res = facade.login(req);
                 state = State.LOGGED_IN;
+                authToken = res.authToken();
                 return params[0] + " has logged in.";
             }
             throw new ResponseException("Expected: <username> <password>");
@@ -178,6 +191,7 @@ public class ChessClient {
                     ChessBoard board = game.game().getBoard();
                     DrawBoardState boardPainter = new DrawBoardState(board, true);
                     boardPainter.drawBoard();
+                    webSocketFacade.connect(authToken, game.gameID());
                     return "Now observing " + game.gameName();
                 } catch (Exception e) {
                     throw new ResponseException("Not a valid ID");
