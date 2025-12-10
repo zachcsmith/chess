@@ -62,6 +62,7 @@ public class ChessClient implements ServerMessageObserver {
                 case "join" -> join(params);
                 case "redraw" -> redrawBoard();
                 case "leave" -> leave();
+                case "resign" -> resign();
                 case "quit" -> "quit";
                 default -> help();
             };
@@ -271,6 +272,17 @@ public class ChessClient implements ServerMessageObserver {
         webSocketFacade.leave(authToken, currentGame);
         state = State.LOGGED_IN;
         return "Left game";
+    }
+
+    public String resign() {
+        System.out.println("Are you sure? Y/N");
+        String res = scanner.nextLine();
+        if (res.equals("Y")) {
+            webSocketFacade.resign(authToken, currentGame);
+            return "You have resigned, the game is over";
+        } else {
+            return "Resignation cancelled, the game continues";
+        }
     }
 
     @Override

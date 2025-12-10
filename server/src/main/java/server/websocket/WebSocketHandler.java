@@ -70,7 +70,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 case CONNECT -> connect(session, username, gameID, color);
 //                case MAKE_MOVE -> makeMove(session, username, gameID, command.getMove());
                 case LEAVE -> leave(session, username, gameID);
-//                case RESIGN -> resign(session, username, gameID);
+                case RESIGN -> resign(session, username, gameID);
                 default ->
                         connections.sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Error: no command type found"));
             }
@@ -120,5 +120,17 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         connections.remove(gameID, username);
     }
 
-    public void resign(Session, )
+    public void resign(Session session, String username, Integer gameID) throws DataAccessException, IOException {
+        GameData gameData = gameService.getGame(gameID);
+        ChessGame game = gameData.game();
+        if (gameData.whiteUsername().equals(username) || gameData.blackUsername().equals(username)) {
+            game.setGameOver();
+            NotificationMessage message = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, String.format("%s has resigned", username));
+            connections.broadcastToAll(gameID, message);
+            GameData endedGame = new GameData(gameID, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game);
+            gameService.updateGame(endedGame);
+        } else {
+            connections.sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Unable to resign this game"));
+        }
+    }
 }
