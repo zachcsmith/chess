@@ -1,6 +1,7 @@
 package server.websocket;
 
 import chess.ChessGame;
+import chess.ChessMove;
 import com.google.gson.Gson;
 import dataaccess.DataAccessException;
 import dataaccess.MySqlDataAccess;
@@ -12,6 +13,7 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import service.*;
 import service.exceptions.UnauthorizedException;
+import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 import websocket.messages.*;
 import websocket.messages.ServerMessage;
@@ -68,7 +70,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
             switch (command.getCommandType()) {
                 case CONNECT -> connect(session, username, gameID, color);
-//                case MAKE_MOVE -> makeMove(session, username, gameID, command.getMove());
+                case MAKE_MOVE -> makeMove(session, username, gameID, command);
                 case LEAVE -> leave(session, username, gameID);
                 case RESIGN -> resign(session, username, gameID);
                 default ->
@@ -132,5 +134,16 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         } else {
             connections.sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Unable to resign this game"));
         }
+    }
+
+    public void makeMove(Session session, String username, Integer gameID, UserGameCommand command) throws DataAccessException, IOException {
+        GameData gameData = gameService.getGame(gameID);
+        ChessGame game = gameData.game();
+        MakeMoveCommand moveCommand = new Gson().fromJson(new Gson().toJson(command), MakeMoveCommand.class);
+        ChessMove move = moveCommand.getMove();
+        if (game.isGameOver()) {
+            connections.sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "game is over and no moves may be made"));
+        }
+
     }
 }
