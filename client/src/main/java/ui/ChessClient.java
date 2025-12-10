@@ -206,6 +206,7 @@ public class ChessClient implements ServerMessageObserver {
                     webSocketFacade.connect(authToken, game.gameID());
                     currentGame = game.gameID();
                     playerTeam = ChessGame.TeamColor.WHITE;
+                    state = State.IN_GAME;
                     return "Now observing " + game.gameName();
                 } catch (Exception e) {
                     throw new ResponseException("Not a valid ID");
@@ -305,5 +306,7 @@ public class ChessClient implements ServerMessageObserver {
     public void loadGame(ChessGame game) {
         myGame = game;
         redrawBoard();
+        System.out.print("\n" + RESET_TEXT_COLOR + state + ">>> ");
+
     }
 }
