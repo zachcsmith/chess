@@ -69,4 +69,8 @@ public class UserService {
     public static String generateToken() {
         return UUID.randomUUID().toString();
     }
+
+    public AuthData getAuth(String authToken) throws DataAccessException {
+        return dataAccess.getAuth(authToken);
+    }
 }

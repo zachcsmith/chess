@@ -8,6 +8,7 @@ import handlers.*;
 import io.javalin.*;
 import io.javalin.http.Context;
 import model.*;
+import server.websocket.WebSocketHandler;
 import service.GameService;
 import service.exceptions.AlreadyTakenException;
 import service.UserService;
@@ -19,6 +20,7 @@ public class Server {
     private final Javalin server;
     private final UserService userService;
     private final GameService gameService;
+    private WebSocketHandler webSocketHandler;
 
     public Server() {
         server = Javalin.create(config -> config.staticFiles.add("web"));
@@ -28,10 +30,16 @@ public class Server {
             var dataAccess = new MySqlDataAccess();
             userService = new UserService(dataAccess);
             gameService = new GameService(dataAccess);
+            webSocketHandler = new WebSocketHandler(userService, gameService);
         } catch (Exception e) {
             throw new RuntimeException("Failed to initialize database", e);
         }
         // Register your endpoints and exception handlers here.
+        server.ws("/ws", ws -> {
+            ws.onConnect(webSocketHandler);
+            ws.onMessage(webSocketHandler);
+            ws.onClose(webSocketHandler);
+        });
         server.delete("db", this::clear); // call clear method to go run it in the DataAccess layer
         server.post("user", this::register);// can use method reference syntax to directly talk to register()
         server.post("session", this::login);

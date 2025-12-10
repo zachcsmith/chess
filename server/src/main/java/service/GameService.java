@@ -76,4 +76,8 @@ public class GameService {
     public void clear() throws DataAccessException {
         dataAccess.clear();
     }
+
+    public GameData getGame(Integer id) throws DataAccessException {
+        return dataAccess.getGame(id);
+    }
 }
