@@ -1,9 +1,12 @@
 package websocket;
 
+import chess.ChessGame;
+import chess.ChessMove;
 import com.google.gson.Gson;
 import jakarta.websocket.Endpoint;
 import jakarta.websocket.*;
 import ui.ResponseException;
+import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 import websocket.messages.NotificationMessage;
 import websocket.messages.*;
@@ -67,6 +70,9 @@ public class WebSocketFacade extends Endpoint {
         sendCommand(new UserGameCommand(UserGameCommand.CommandType.RESIGN, authToken, gameID));
     }
 
+    public void makeMove(String authToken, Integer gameID, ChessMove move) {
+        sendCommand(new MakeMoveCommand(UserGameCommand.CommandType.MAKE_MOVE, authToken, gameID, move));
+    }
 
     public void sendCommand(UserGameCommand command) throws ResponseException {
         try {

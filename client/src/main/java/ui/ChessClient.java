@@ -303,21 +303,27 @@ public class ChessClient implements ServerMessageObserver {
             ChessPiece.PieceType promo = null;
             ChessMove move = new ChessMove(startPos, endPos, null);
             if (params.length == 3) {
-                if (params[2].equals("queen")){move = new ChessMove(startPos, endPos, QUEEN);}
-                else if(params[2].equals("knight")){move = new ChessMove(startPos, endPos, KNIGHT);}
-                else if(params[2].equals("rook")){move = new ChessMove(startPos, endPos, ROOK);}
-                else if(params[2].equals("bishop")){move = new ChessMove(startPos, endPos, BISHOP);}
-                else{throw new ResponseException("invalid promotion piece");}
+                if (params[2].equals("queen")) {
+                    move = new ChessMove(startPos, endPos, QUEEN);
+                } else if (params[2].equals("knight")) {
+                    move = new ChessMove(startPos, endPos, KNIGHT);
+                } else if (params[2].equals("rook")) {
+                    move = new ChessMove(startPos, endPos, ROOK);
+                } else if (params[2].equals("bishop")) {
+                    move = new ChessMove(startPos, endPos, BISHOP);
+                } else {
+                    throw new ResponseException("invalid promotion piece");
+                }
             }
-            webSocketFacade.makeMove(authToken, currentGame, )
+            webSocketFacade.makeMove(authToken, currentGame, move);
             return ("move made");
-        } catch(Exception ex){
+        } catch (Exception ex) {
             throw new ResponseException(ex.getMessage());
         }
     }
 
-    public ChessPosition getPosition(String pos){
-        if (pos.length() != 2){
+    public ChessPosition getPosition(String pos) {
+        if (pos.length() != 2) {
             throw new ResponseException("invalid move annotation");
         }
         char colChar = pos.charAt(0);
@@ -325,7 +331,7 @@ public class ChessClient implements ServerMessageObserver {
         int col = colChar - 'a' + 1;
         int row = rowChar - '0';
 
-        if (col <1 || col > 8 || row < 1 || row >8){
+        if (col < 1 || col > 8 || row < 1 || row > 8) {
             throw new ResponseException("invalid move annotation");
         }
         return new ChessPosition(row, col);
