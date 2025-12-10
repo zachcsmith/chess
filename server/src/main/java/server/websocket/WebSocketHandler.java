@@ -69,7 +69,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             switch (command.getCommandType()) {
                 case CONNECT -> connect(session, username, gameID, color);
 //                case MAKE_MOVE -> makeMove(session, username, gameID, command.getMove());
-//                case LEAVE -> leave(session, username, gameID);
+                case LEAVE -> leave(session, username, gameID);
 //                case RESIGN -> resign(session, username, gameID);
                 default ->
                         connections.sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Error: no command type found"));
@@ -103,5 +103,22 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         connections.sendMessage(session, gameMessage);
     }
 
-    public void leave(Session session, )
+    public void leave(Session session, String username, Integer gameID) throws DataAccessException, IOException {
+        GameData ogGame = gameService.getGame(gameID);
+        GameData updatedGame;
+        if (ogGame.whiteUsername() != null && ogGame.whiteUsername().equals(username)) {
+            updatedGame = new GameData(ogGame.gameID(), null, ogGame.blackUsername(), ogGame.gameName(), ogGame.game());
+        } else if (ogGame.blackUsername() != null && ogGame.blackUsername().equals(username)) {
+            updatedGame = new GameData(ogGame.gameID(), ogGame.whiteUsername(), null, ogGame.gameName(), ogGame.game());
+        } else {
+            updatedGame = ogGame;
+        }
+        gameService.updateGame(updatedGame);
+        System.out.println("broadcasting leave game for user " + username);
+        NotificationMessage message = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, String.format("%s left the game", username));
+        connections.broadcast(gameID, username, message);
+        connections.remove(gameID, username);
+    }
+
+    public void resign(Session, )
 }

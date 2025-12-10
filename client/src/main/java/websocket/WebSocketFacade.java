@@ -46,7 +46,6 @@ public class WebSocketFacade extends Endpoint {
     }
 
     private void handleIncomingMessage(String message) {
-        System.out.println("Received Raw JSON: " + message);
         ServerMessage serverMessage = new Gson().fromJson(message, ServerMessage.class);
         ServerMessage msg = switch (serverMessage.getServerMessageType()) {
             case NOTIFICATION -> new Gson().fromJson(message, NotificationMessage.class);
@@ -58,6 +57,10 @@ public class WebSocketFacade extends Endpoint {
 
     public void connect(String authToken, Integer gameID) {
         sendCommand(new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID));
+    }
+
+    public void leave(String authToken, Integer gameID) {
+        sendCommand(new UserGameCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID));
     }
 
     public void sendCommand(UserGameCommand command) throws ResponseException {

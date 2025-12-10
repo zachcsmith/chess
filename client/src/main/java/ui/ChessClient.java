@@ -6,6 +6,7 @@ import model.*;
 import handlers.*;
 import websocket.ServerMessageObserver;
 import websocket.WebSocketFacade;
+import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
@@ -14,7 +15,7 @@ import static ui.EscapeSequences.*;
 
 import java.util.*;
 
-public class ChessClient {
+public class ChessClient implements ServerMessageObserver {
     private State state = State.LOGGED_OUT;
     private ServerFacade facade;
     Scanner scanner = new Scanner(System.in);
@@ -23,25 +24,11 @@ public class ChessClient {
     ChessGame.TeamColor playerTeam = null;
     HashMap<Integer, GameData> gameMap = new HashMap<>();
     private final WebSocketFacade webSocketFacade;
+    ChessGame myGame = null;
 
     public ChessClient(String port) {
         facade = new ServerFacade(port);
-        ServerMessageObserver observer = new ServerMessageObserver() {
-            @Override
-            public void notify(ServerMessage message) {
-                // Check the message type and print the content
-                if (message instanceof NotificationMessage notification) {
-                    System.out.println("\n<<< " + notification.getMessage());
-                } else if (message instanceof LoadGameMessage loadGame) {
-                    // Here is where you would call your board drawing logic
-                    System.out.println("\n<<< Game loaded! Current Turn: ");
-                }
-                // ... handle ErrorMessage ...
-                // Re-print the client prompt
-                System.out.print("\n" + RESET_TEXT_COLOR + state + ">>> ");
-            }
-        };
-        webSocketFacade = new WebSocketFacade(port, observer);
+        webSocketFacade = new WebSocketFacade(port, this);
     }
 
     public void run() {
@@ -74,6 +61,7 @@ public class ChessClient {
                 case "observe" -> observe(params);
                 case "join" -> join(params);
                 case "redraw" -> redrawBoard();
+                case "leave" -> leave();
                 case "quit" -> "quit";
                 default -> help();
             };
@@ -246,7 +234,7 @@ public class ChessClient {
                     webSocketFacade.connect(authToken, game.gameID());
                     ChessBoard board = game.game().getBoard();
                     DrawBoardState boardPainter = new DrawBoardState(board, color == ChessGame.TeamColor.WHITE);
-                    boardPainter.drawBoard();
+//                    boardPainter.drawBoard();
                     state = State.IN_GAME;
                     playerTeam = color;
                     currentGame = game.gameID();
@@ -266,8 +254,44 @@ public class ChessClient {
     }
 
     public String redrawBoard() {
+        if (state != State.IN_GAME) {
+            return "Must be in game";
+        }
         ChessBoard board = gameMap.get(currentGame).game().getBoard();
+
         DrawBoardState boardState = new DrawBoardState(board, playerTeam == ChessGame.TeamColor.WHITE);
+        boardState.drawBoard();
         return "Board has been redrawn";
+    }
+
+    public String leave() {
+        if (state != State.IN_GAME) {
+            return "Must be in game";
+        }
+        webSocketFacade.leave(authToken, currentGame);
+        state = State.LOGGED_IN;
+        return "Left game";
+    }
+
+    @Override
+    public void notify(ServerMessage message) {
+        switch (message.getServerMessageType()) {
+            case NOTIFICATION -> displayNotification(((NotificationMessage) message).getMessage());
+            case ERROR -> displayError(((ErrorMessage) message).getErrorMessage());
+            case LOAD_GAME -> loadGame(((LoadGameMessage) message).getGame());
+        }
+    }
+
+    public void displayNotification(String message) {
+        System.out.println(message);
+    }
+
+    public void displayError(String errorMessage) {
+        System.out.println(errorMessage);
+    }
+
+    public void loadGame(ChessGame game) {
+        myGame = game;
+        redrawBoard();
     }
 }

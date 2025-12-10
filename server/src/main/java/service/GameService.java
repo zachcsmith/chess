@@ -80,4 +80,8 @@ public class GameService {
     public GameData getGame(Integer id) throws DataAccessException {
         return dataAccess.getGame(id);
     }
+
+    public void updateGame(GameData newGame) throws DataAccessException {
+        dataAccess.updateGame(newGame);
+    }
 }
