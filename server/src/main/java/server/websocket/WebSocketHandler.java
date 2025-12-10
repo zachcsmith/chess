@@ -16,6 +16,8 @@ import websocket.commands.UserGameCommand;
 import websocket.messages.ErrorMessage;
 import websocket.messages.ServerMessage;
 
+import javax.management.Notification;
+
 public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
 
     private final ConnectionHandler connections = new ConnectionHandler();
@@ -80,7 +82,14 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     public void connect(Session session, String username, Integer gameID, ChessGame.TeamColor color) throws DataAccessException {
         connections.add(gameID, username, session);
-
-
+        GameData gameData = gameService.getGame(gameID);
+        if (gameData == null){return;}
+        ChessGame game = gameData.game();
+        String playerType;
+        if (color == ChessGame.TeamColor.WHITE){playerType = "white";}
+        if (color == ChessGame.TeamColor.BLACK){playerType = "black";}
+        else {playerType = "observer";}
+        String message = username + " joined the game " + gameID + " as " + playerType;
+        NotificationMessage
     }
 }
