@@ -123,7 +123,7 @@ public class DrawBoardState {
     private String getPieceKey(ChessPiece piece) {
         if (piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
 
-            out.print(SET_TEXT_COLOR_RED);
+            out.print(SET_TEXT_COLOR_WHITE);
         } else {
             out.print(SET_TEXT_COLOR_BLUE);
         }

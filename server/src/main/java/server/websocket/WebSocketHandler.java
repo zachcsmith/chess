@@ -6,13 +6,10 @@ import chess.ChessPosition;
 import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import dataaccess.DataAccessException;
-import dataaccess.MySqlDataAccess;
 import io.javalin.websocket.*;
 import model.AuthData;
 import model.GameData;
 import org.eclipse.jetty.websocket.api.Session;
-import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
-import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import service.*;
 import service.exceptions.UnauthorizedException;
 import websocket.commands.MakeMoveCommand;
@@ -20,7 +17,6 @@ import websocket.commands.UserGameCommand;
 import websocket.messages.*;
 import websocket.messages.ServerMessage;
 
-import javax.management.Notification;
 import java.io.IOException;
 
 public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
@@ -111,14 +107,14 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     public void leave(Session session, String username, Integer gameID) throws DataAccessException, IOException {
-        GameData ogGame = gameService.getGame(gameID);
+        GameData originalGame = gameService.getGame(gameID);
         GameData updatedGame;
-        if (ogGame.whiteUsername() != null && ogGame.whiteUsername().equals(username)) {
-            updatedGame = new GameData(ogGame.gameID(), null, ogGame.blackUsername(), ogGame.gameName(), ogGame.game());
-        } else if (ogGame.blackUsername() != null && ogGame.blackUsername().equals(username)) {
-            updatedGame = new GameData(ogGame.gameID(), ogGame.whiteUsername(), null, ogGame.gameName(), ogGame.game());
+        if (originalGame.whiteUsername() != null && originalGame.whiteUsername().equals(username)) {
+            updatedGame = new GameData(originalGame.gameID(), null, originalGame.blackUsername(), originalGame.gameName(), originalGame.game());
+        } else if (originalGame.blackUsername() != null && originalGame.blackUsername().equals(username)) {
+            updatedGame = new GameData(originalGame.gameID(), originalGame.whiteUsername(), null, originalGame.gameName(), originalGame.game());
         } else {
-            updatedGame = ogGame;
+            updatedGame = originalGame;
         }
         gameService.updateGame(updatedGame);
         System.out.println("broadcasting leave game for user " + username);
@@ -179,7 +175,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                     String.format("the move %s to %s has been made by %s",
                             positionToString(move.getStartPosition()),
                             positionToString(move.getEndPosition())
-                            , turn));
+                            , username));
             connections.broadcast(gameID, username, notificationMessage);
             ChessGame.TeamColor oppColor = (((turn.equals(ChessGame.TeamColor.WHITE)) ? ChessGame.TeamColor.BLACK : (ChessGame.TeamColor.WHITE)));
             String opp = (oppColor == ChessGame.TeamColor.WHITE ? gameData.whiteUsername() : gameData.blackUsername());
