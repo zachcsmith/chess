@@ -115,6 +115,7 @@ public class ChessClient implements ServerMessageObserver {
             if (params.length == 3) {
                 UserData req = new UserData(params[0], params[1], params[2]);
                 AuthData res = facade.register(req);
+                authToken = res.authToken();
                 state = State.LOGGED_IN;
                 return "You have registered as " + params[0];
             }
@@ -306,6 +307,9 @@ public class ChessClient implements ServerMessageObserver {
             ChessPiece.PieceType promo = null;
             ChessMove move = new ChessMove(startPos, endPos, null);
             if (params.length == 3) {
+                if ((endPos.getRow() != 8 || endPos.getRow() != 1) && myGame.getBoard().getPiece(startPos).getPieceType() != PAWN) {
+                    throw new ResponseException("Invalid promotion");
+                }
                 if (params[2].equals("queen")) {
                     move = new ChessMove(startPos, endPos, QUEEN);
                 } else if (params[2].equals("knight")) {
