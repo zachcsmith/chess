@@ -326,7 +326,33 @@ public class ChessClient implements ServerMessageObserver {
     }
 
     public String highlight(String[] params) {
-
+        if (state != State.IN_GAME) {
+            throw new ResponseException("Must be in a game to highlight");
+        }
+        if (params.length != 1) {
+            throw new ResponseException("expected format <position>");
+        }
+        try {
+            ChessPosition pos = getPosition(params[0]);
+            if (myGame.getBoard().getPiece(pos) == null) {
+                throw new ResponseException("No piece at this position");
+            }
+            Collection<ChessMove> valids = myGame.validMoves(pos);
+            Collection<ChessPosition> highlights = new HashSet<>();
+            for (ChessMove move : valids) {
+                highlights.add(move.getEndPosition());
+            }
+            DrawBoardState drawer = new DrawBoardState(
+                    myGame.getBoard(),
+                    playerTeam == ChessGame.TeamColor.WHITE,
+                    pos,
+                    highlights
+            );
+            drawer.drawBoard();
+            return "Moves highlighted for " + params[0];
+        } catch (Exception e) {
+            throw new ResponseException("failed to highlight");
+        }
     }
 
     public ChessPosition getPosition(String pos) {

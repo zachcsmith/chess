@@ -92,19 +92,19 @@ public class DrawBoardState {
 
     private void drawSquare(int row, int col) {
         ChessPosition squarePos = new ChessPosition(row, col);
-        boolean isSelected = position.equals(squarePos);
-        boolean isHighlighted = highlights.contains(squarePos);
+        boolean isSelected = position != null && position.equals(squarePos);
+        boolean isHighlighted = highlights != null && highlights.contains(squarePos);
         boolean light;
         light = (row + col) % 2 == 1;
         if (light) {
             out.print(SET_BG_COLOR_LIGHT_GREY);
             if (isHighlighted) {
-                out.print(SET_BG_COLOR_RED);
+                out.print(SET_BG_COLOR_MAGENTA);
             }
         } else {
             out.print(SET_BG_COLOR_DARK_GREEN);
             if (isHighlighted) {
-                out.print(SET_BG_COLOR_MAGENTA);
+                out.print(SET_BG_COLOR_RED);
             }
         }
         if (isSelected) {
