@@ -131,6 +131,11 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     public void resign(Session session, String username, Integer gameID) throws DataAccessException, IOException {
         GameData gameData = gameService.getGame(gameID);
         ChessGame game = gameData.game();
+        if (game.isGameOver()) {
+            connections.sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR,
+                    "Game is over, you cannot resign"));
+            return;
+        }
         if (gameData.whiteUsername().equals(username) || gameData.blackUsername().equals(username)) {
             game.setGameOver();
             NotificationMessage message = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,
@@ -178,24 +183,22 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             connections.broadcast(gameID, username, notificationMessage);
             ChessGame.TeamColor oppColor = (((turn.equals(ChessGame.TeamColor.WHITE)) ? ChessGame.TeamColor.BLACK : (ChessGame.TeamColor.WHITE)));
             String opp = (oppColor == ChessGame.TeamColor.WHITE ? gameData.whiteUsername() : gameData.blackUsername());
-            if (game.isInCheck(oppColor)) {
-                NotificationMessage checkMessage = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,
-                        String.format("%s is in check", opp));
-                connections.broadcastToAll(gameID, checkMessage);
-            }
-            if (game.isInStalemate(oppColor)) {
-                NotificationMessage staleMessage = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,
-                        String.format("%s is in stalemate", opp));
-                game.setGameOver();
-                gameService.updateGame(new GameData(gameID, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game));
-                connections.broadcastToAll(gameID, staleMessage);
-            }
             if (game.isInCheckmate(oppColor)) {
                 NotificationMessage mateMessage = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,
                         String.format("%s is in checkmate, %s wins", opp, username));
                 game.setGameOver();
                 gameService.updateGame(new GameData(gameID, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game));
                 connections.broadcastToAll(gameID, mateMessage);
+            } else if (game.isInCheck(oppColor)) {
+                NotificationMessage checkMessage = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,
+                        String.format("%s is in check", opp));
+                connections.broadcastToAll(gameID, checkMessage);
+            } else if (game.isInStalemate(oppColor)) {
+                NotificationMessage staleMessage = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,
+                        String.format("%s is in stalemate", opp));
+                game.setGameOver();
+                gameService.updateGame(new GameData(gameID, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game));
+                connections.broadcastToAll(gameID, staleMessage);
             }
 
         } catch (InvalidMoveException e) {
