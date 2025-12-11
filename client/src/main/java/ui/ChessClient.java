@@ -77,7 +77,7 @@ public class ChessClient implements ServerMessageObserver {
     }
 
     private String help() {
-        if (!loggedIn()) {
+        if (state.equals(State.LOGGED_OUT)) {
             return """
                     - help
                     - register <username> <password> <email>
@@ -203,7 +203,7 @@ public class ChessClient implements ServerMessageObserver {
                     GameData game = gameMap.get(gameNum);
                     ChessBoard board = game.game().getBoard();
                     DrawBoardState boardPainter = new DrawBoardState(board, true);
-                    boardPainter.drawBoard();
+//                    boardPainter.drawBoard();
                     webSocketFacade.connect(authToken, game.gameID());
                     currentGame = game.gameID();
                     playerTeam = ChessGame.TeamColor.WHITE;
@@ -219,8 +219,10 @@ public class ChessClient implements ServerMessageObserver {
 
     private String join(String[] params) {
         ChessGame.TeamColor color;
-        if (!loggedIn()) {
+        if (state == State.LOGGED_OUT) {
             throw new ResponseException("You are not logged in.");
+        } else if (state == State.IN_GAME) {
+            throw new ResponseException("leave the game to join a new game");
         } else {
             if (params.length == 2) {
                 try {
@@ -260,7 +262,7 @@ public class ChessClient implements ServerMessageObserver {
         if (state != State.IN_GAME) {
             return "Must be in game";
         }
-        ChessBoard board = gameMap.get(currentGame).game().getBoard();
+        ChessBoard board = myGame.getBoard();
 
         DrawBoardState boardState = new DrawBoardState(board, playerTeam == ChessGame.TeamColor.WHITE);
         boardState.drawBoard();
@@ -316,7 +318,7 @@ public class ChessClient implements ServerMessageObserver {
                 }
             }
             webSocketFacade.makeMove(authToken, currentGame, move);
-            return ("move made");
+            return "";
         } catch (Exception ex) {
             throw new ResponseException(ex.getMessage());
         }
@@ -348,10 +350,13 @@ public class ChessClient implements ServerMessageObserver {
 
     public void displayNotification(String message) {
         System.out.println(message);
+        System.out.print("\n" + RESET_TEXT_COLOR + state + ">>> ");
+
     }
 
     public void displayError(String errorMessage) {
         System.out.println(errorMessage);
+        System.out.print("\n" + RESET_TEXT_COLOR + state + ">>> ");
     }
 
     public void loadGame(ChessGame game) {

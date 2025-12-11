@@ -72,7 +72,10 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
             switch (command.getCommandType()) {
                 case CONNECT -> connect(session, username, gameID, color);
-                case MAKE_MOVE -> makeMove(session, username, gameID, command);
+                case MAKE_MOVE -> {
+                    MakeMoveCommand moveCommand = new Gson().fromJson(ctx.message(), MakeMoveCommand.class);
+                    makeMove(session, username, gameID, moveCommand);
+                }
                 case LEAVE -> leave(session, username, gameID);
                 case RESIGN -> resign(session, username, gameID);
                 default ->
@@ -138,13 +141,13 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         }
     }
 
-    public void makeMove(Session session, String username, Integer gameID, UserGameCommand command) throws DataAccessException, IOException {
+    public void makeMove(Session session, String username, Integer gameID, MakeMoveCommand command) throws DataAccessException, IOException {
         GameData gameData = gameService.getGame(gameID);
         ChessGame game = gameData.game();
-        MakeMoveCommand moveCommand = new Gson().fromJson(new Gson().toJson(command), MakeMoveCommand.class);
-        ChessMove move = moveCommand.getMove();
+        ChessMove move = command.getMove();
         if (game.isGameOver()) {
             connections.sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "game is over and no moves may be made"));
+            return;
         }
         ChessGame.TeamColor turn = game.getTeamTurn();
         boolean isWhite = username.equals(gameData.whiteUsername());
@@ -157,6 +160,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         }
         if (!isBlack && !isWhite) {
             connections.sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "you are not a player"));
+            return;
         }
         try {
             game.makeMove(move);
