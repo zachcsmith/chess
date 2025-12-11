@@ -7,17 +7,31 @@ import chess.ChessPosition;
 
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import static ui.EscapeSequences.*;
 
 public class DrawBoardState {
     private final boolean whitePerspective;
     private final ChessBoard board;
+    private final ChessPosition position;
+    private final Set<ChessPosition> highlights;
     private final PrintStream out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
 
     public DrawBoardState(ChessBoard importedBoard, boolean whitePerspective) {
         this.board = importedBoard;
         this.whitePerspective = whitePerspective;
+        this.position = null;
+        this.highlights = null;
+    }
+
+    public DrawBoardState(ChessBoard importedBoard, boolean whitePerspective, ChessPosition position, Collection<ChessPosition> highlights) {
+        this.board = importedBoard;
+        this.whitePerspective = whitePerspective;
+        this.position = position;
+        this.highlights = highlights != null ? new HashSet<>(highlights) : new HashSet<>();
     }
 
     public void drawBoard() {
@@ -77,12 +91,24 @@ public class DrawBoardState {
     }
 
     private void drawSquare(int row, int col) {
+        ChessPosition squarePos = new ChessPosition(row, col);
+        boolean isSelected = position.equals(squarePos);
+        boolean isHighlighted = highlights.contains(squarePos);
         boolean light;
         light = (row + col) % 2 == 1;
         if (light) {
             out.print(SET_BG_COLOR_LIGHT_GREY);
+            if (isHighlighted) {
+                out.print(SET_BG_COLOR_RED);
+            }
         } else {
             out.print(SET_BG_COLOR_DARK_GREEN);
+            if (isHighlighted) {
+                out.print(SET_BG_COLOR_MAGENTA);
+            }
+        }
+        if (isSelected) {
+            out.print(SET_BG_COLOR_YELLOW);
         }
         ChessPosition position = new ChessPosition(row, col);
         ChessPiece piece = board.getPiece(position);

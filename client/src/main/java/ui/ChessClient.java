@@ -64,6 +64,7 @@ public class ChessClient implements ServerMessageObserver {
                 case "leave" -> leave();
                 case "resign" -> resign();
                 case "move" -> makeMove(params);
+                case "highlight" -> highlight(params);
                 case "quit" -> "quit";
                 default -> help();
             };
@@ -100,7 +101,7 @@ public class ChessClient implements ServerMessageObserver {
                     - leave
                     - move <start position> <end position> <promotion(if applicable)>
                     - resign
-                    - highlight
+                    - highlight <position>
                     """;
         } else {
             return "";
@@ -322,6 +323,10 @@ public class ChessClient implements ServerMessageObserver {
         } catch (Exception ex) {
             throw new ResponseException(ex.getMessage());
         }
+    }
+
+    public String highlight(String[] params) {
+
     }
 
     public ChessPosition getPosition(String pos) {
