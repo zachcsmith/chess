@@ -122,7 +122,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         }
         gameService.updateGame(updatedGame);
         System.out.println("broadcasting leave game for user " + username);
-        NotificationMessage message = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, String.format("%s left the game", username));
+        NotificationMessage message = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,
+                String.format("%s left the game", username));
         connections.broadcast(gameID, username, message);
         connections.remove(gameID, username);
     }
@@ -132,7 +133,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         ChessGame game = gameData.game();
         if (gameData.whiteUsername().equals(username) || gameData.blackUsername().equals(username)) {
             game.setGameOver();
-            NotificationMessage message = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, String.format("%s has resigned", username));
+            NotificationMessage message = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,
+                    String.format("%s has resigned", username));
             connections.broadcastToAll(gameID, message);
             GameData endedGame = new GameData(gameID, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game);
             gameService.updateGame(endedGame);
@@ -177,17 +179,20 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             ChessGame.TeamColor oppColor = (((turn.equals(ChessGame.TeamColor.WHITE)) ? ChessGame.TeamColor.BLACK : (ChessGame.TeamColor.WHITE)));
             String opp = (oppColor == ChessGame.TeamColor.WHITE ? gameData.whiteUsername() : gameData.blackUsername());
             if (game.isInCheck(oppColor)) {
-                NotificationMessage checkMessage = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, String.format("%s is in check", opp));
+                NotificationMessage checkMessage = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,
+                        String.format("%s is in check", opp));
                 connections.broadcastToAll(gameID, checkMessage);
             }
             if (game.isInStalemate(oppColor)) {
-                NotificationMessage staleMessage = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, String.format("%s is in stalemate", opp));
+                NotificationMessage staleMessage = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,
+                        String.format("%s is in stalemate", opp));
                 game.setGameOver();
                 gameService.updateGame(new GameData(gameID, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game));
                 connections.broadcastToAll(gameID, staleMessage);
             }
             if (game.isInCheckmate(oppColor)) {
-                NotificationMessage mateMessage = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, String.format("%s is in checkmate, %s wins", opp, username));
+                NotificationMessage mateMessage = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,
+                        String.format("%s is in checkmate, %s wins", opp, username));
                 game.setGameOver();
                 gameService.updateGame(new GameData(gameID, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game));
                 connections.broadcastToAll(gameID, mateMessage);

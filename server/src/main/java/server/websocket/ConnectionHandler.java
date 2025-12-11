@@ -61,11 +61,4 @@ public class ConnectionHandler {
             sendMessage(session, message);
         }
     }
-
-    public Session getSession(int gameID, String username) {
-        if (!gameConnections.containsKey(gameID)) {
-            return null;
-        }
-        return gameConnections.get(gameID).get(username);
-    }
 }
